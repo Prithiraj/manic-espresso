@@ -16,30 +16,83 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download demo photography
+      - name: Discover and download current demo photography
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p site/assets/images
 
-          download() {
-            local url="$1"
-            local output="$2"
-            echo "Downloading $output"
-            curl --fail --location --retry 3 --retry-delay 2 \
-              --connect-timeout 20 --max-time 90 \
-              --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36' \
-              --referer 'https://www.findglocal.com/AU/Perth/216035731919391/Manic-Espresso' \
-              --output "$output" "$url"
-            test "$(wc -c < "$output")" -gt 15000
-            file "$output" | grep -Eqi 'JPEG|PNG|Web/P image'
+          python - <<'PY'
+          import html
+          import pathlib
+          import re
+          import requests
+          from urllib.parse import urljoin
+
+          out = pathlib.Path('site/assets/images')
+          headers = {
+              'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36',
+              'Referer': 'https://www.findglocal.com/AU/Perth/216035731919391/Manic-Espresso',
           }
 
-          download 'https://img3.findglocal.com/613/214/890286946132142.jpg' 'site/assets/images/hero-breakfast.jpg'
-          download 'https://img4.findglocal.com/343/536/1267542603435360.jpg' 'site/assets/images/egg-breakfast.jpg'
-          download 'https://img4.findglocal.com/496/411/1018921734964116.jpg' 'site/assets/images/pancakes.jpg'
-          download 'https://img4.findglocal.com/797/054/1022190787970544.jpg' 'site/assets/images/wraps.jpg'
-          download 'https://img3.findglocal.com/889/788/1012917368897886.jpg' 'site/assets/images/egg-greens.jpg'
+          source = 'https://www.findglocal.com/AU/Perth/216035731919391/Manic-Espresso'
+          page = requests.get(source, headers=headers, timeout=30)
+          page.raise_for_status()
+          text = html.unescape(page.text).replace('\\/', '/')
+
+          patterns = [
+              r'https?://img\d+\.findglocal\.com/[^\"\'\s<>]+',
+              r'//img\d+\.findglocal\.com/[^\"\'\s<>]+',
+          ]
+          candidates = []
+          for pattern in patterns:
+              for value in re.findall(pattern, text):
+                  if value.startswith('//'):
+                      value = 'https:' + value
+                  value = value.rstrip('),;')
+                  if any(ext in value.lower() for ext in ('.jpg', '.jpeg', '.png', '.webp')) and value not in candidates:
+                      candidates.append(value)
+
+          print(f'Found {len(candidates)} FindGlocal image candidates')
+          for value in candidates[:30]:
+              print('candidate:', value)
+
+          saved = 0
+          for value in candidates:
+              if saved >= 6:
+                  break
+              try:
+                  response = requests.get(value, headers=headers, timeout=30)
+                  content_type = response.headers.get('content-type', '')
+                  if response.status_code != 200 or not content_type.startswith('image/') or len(response.content) < 15000:
+                      print('skip:', response.status_code, content_type, len(response.content), value)
+                      continue
+                  suffix = '.png' if 'png' in content_type else '.webp' if 'webp' in content_type else '.jpg'
+                  target = out / f'manic-{saved + 1:02d}{suffix}'
+                  target.write_bytes(response.content)
+                  print('saved:', target, len(response.content), value)
+                  saved += 1
+              except Exception as exc:
+                  print('error:', value, exc)
+
+          # A known real interior photo from Manic Espresso's Quandoo listing.
+          interior_url = 'https://d24horgtq2wtu8.cloudfront.net/80fa9ae7-0d23-48f2-94fe-24da97b44bfd/686659_sld.jpg'
+          try:
+              response = requests.get(interior_url, headers={'User-Agent': headers['User-Agent']}, timeout=30)
+              if response.status_code == 200 and response.headers.get('content-type', '').startswith('image/') and len(response.content) > 15000:
+                  (out / 'interior.jpg').write_bytes(response.content)
+                  print('saved:', out / 'interior.jpg', len(response.content), interior_url)
+              else:
+                  print('interior skipped:', response.status_code, response.headers.get('content-type'), len(response.content))
+          except Exception as exc:
+              print('interior error:', exc)
+
+          if not any(out.glob('manic-*')) and not (out / 'interior.jpg').exists():
+              raise SystemExit('No usable demo images were downloaded.')
+          PY
+
+          echo 'Downloaded files:'
+          find site/assets/images -maxdepth 1 -type f -print -exec file {} \;
 
       - name: Commit cached images
         shell: bash
