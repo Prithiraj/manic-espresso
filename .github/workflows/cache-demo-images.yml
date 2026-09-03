@@ -23,7 +23,9 @@ jobs:
           mkdir -p site/assets/images
 
           python - <<'PY'
+          import html
           import pathlib
+          import re
           import requests
 
           out = pathlib.Path('site/assets/images')
@@ -33,6 +35,7 @@ jobs:
 
           def save_image(url, stem, referer=None):
               try:
+                  url = html.unescape(url).replace('\\/', '/').replace('&amp;', '&')
                   headers = {'Referer': referer} if referer else {}
                   response = session.get(url, headers=headers, timeout=40)
                   content_type = response.headers.get('content-type', '').lower()
@@ -56,7 +59,6 @@ jobs:
           )
 
           # Historical first-hand visit photography from the 2015 Manic Espresso Como review.
-          # WordPress's public API returns the post's own media attachments without relying on hotlinking the rendered page.
           api_url = 'https://public-api.wordpress.com/rest/v1.1/sites/frenchtoastandindiepop.wordpress.com/posts/slug:manic-espresso-como'
           blog_url = 'https://frenchtoastandindiepop.wordpress.com/2015/03/14/manic-espresso-como/'
           try:
@@ -64,17 +66,23 @@ jobs:
               print('wordpress api:', response.status_code, len(response.content))
               response.raise_for_status()
               post = response.json()
-              attachments = list((post.get('attachments') or {}).values())
-              print('wordpress attachments:', len(attachments))
+              content = html.unescape(post.get('content') or '').replace('\\/', '/')
+              urls = re.findall(r'https?://[^\"\'\s<>]+', content)
+              candidates = []
+              for value in urls:
+                  value = value.rstrip('),;')
+                  low = value.lower()
+                  if any(ext in low for ext in ('.jpg', '.jpeg', '.png', '.webp')) and ('wp.com' in low or 'wordpress.com' in low):
+                      if value not in candidates:
+                          candidates.append(value)
+              print('wordpress content image candidates:', len(candidates))
+              for value in candidates:
+                  print('candidate:', value)
               saved = 0
-              for attachment in attachments:
+              for value in candidates:
                   if saved >= 6:
                       break
-                  url = attachment.get('URL') or attachment.get('url')
-                  mime = (attachment.get('mime_type') or '').lower()
-                  if not url or (mime and not mime.startswith('image/')):
-                      continue
-                  if save_image(url, f'visit-{saved + 1:02d}', blog_url):
+                  if save_image(value, f'visit-{saved + 1:02d}', blog_url):
                       saved += 1
           except Exception as exc:
               print('wordpress api error:', exc)
