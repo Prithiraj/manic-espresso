@@ -1,0 +1,56 @@
+name: Cache demo images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/cache-demo-images.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cache-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download demo photography
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site/assets/images
+
+          download() {
+            local url="$1"
+            local output="$2"
+            echo "Downloading $output"
+            curl --fail --location --retry 3 --retry-delay 2 \
+              --connect-timeout 20 --max-time 90 \
+              --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36' \
+              --referer 'https://www.findglocal.com/AU/Perth/216035731919391/Manic-Espresso' \
+              --output "$output" "$url"
+            test "$(wc -c < "$output")" -gt 15000
+            file "$output" | grep -Eqi 'JPEG|PNG|Web/P image'
+          }
+
+          download 'https://img3.findglocal.com/613/214/890286946132142.jpg' 'site/assets/images/hero-breakfast.jpg'
+          download 'https://img4.findglocal.com/343/536/1267542603435360.jpg' 'site/assets/images/egg-breakfast.jpg'
+          download 'https://img4.findglocal.com/496/411/1018921734964116.jpg' 'site/assets/images/pancakes.jpg'
+          download 'https://img4.findglocal.com/797/054/1022190787970544.jpg' 'site/assets/images/wraps.jpg'
+          download 'https://img3.findglocal.com/889/788/1012917368897886.jpg' 'site/assets/images/egg-greens.jpg'
+
+      - name: Commit cached images
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add site/assets/images
+          if git diff --cached --quiet; then
+            echo 'No image changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Cache demo photography locally'
+          git push
