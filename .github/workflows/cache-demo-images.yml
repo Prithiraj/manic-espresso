@@ -23,9 +23,7 @@ jobs:
           mkdir -p site/assets/images
 
           python - <<'PY'
-          import html
           import pathlib
-          import re
           import requests
 
           out = pathlib.Path('site/assets/images')
@@ -57,47 +55,29 @@ jobs:
               'https://social.quandoo.com/en/groups/Manic%20Espresso'
           )
 
-          # Historical editorial Manic Espresso food photo. Demo only; credited by Urban List to Elle Borgward.
-          urban_url = 'https://www.theurbanlist.com/perth/directory/manic-espresso'
-          try:
-              response = session.get(urban_url, timeout=40)
-              print('urban list page:', response.status_code, len(response.content))
-              text = html.unescape(response.text).replace('\\/', '/')
-              meta_patterns = [
-                  r'<meta[^>]+property=[\"\']og:image[\"\'][^>]+content=[\"\']([^\"\']+)',
-                  r'<meta[^>]+content=[\"\']([^\"\']+)[\"\'][^>]+property=[\"\']og:image[\"\']',
-                  r'<meta[^>]+name=[\"\']twitter:image[\"\'][^>]+content=[\"\']([^\"\']+)',
-              ]
-              for pattern in meta_patterns:
-                  match = re.search(pattern, text, re.I)
-                  if match and save_image(match.group(1), 'food-editorial', urban_url):
-                      break
-          except Exception as exc:
-              print('urban list error:', exc)
-
-          # Historical first-hand visit photography from the Manic Espresso Como review page.
+          # Historical first-hand visit photography from the 2015 Manic Espresso Como review.
+          # WordPress's public API returns the post's own media attachments without relying on hotlinking the rendered page.
+          api_url = 'https://public-api.wordpress.com/rest/v1.1/sites/frenchtoastandindiepop.wordpress.com/posts/slug:manic-espresso-como'
           blog_url = 'https://frenchtoastandindiepop.wordpress.com/2015/03/14/manic-espresso-como/'
           try:
-              response = session.get(blog_url, timeout=40)
-              print('blog page:', response.status_code, len(response.content))
-              text = html.unescape(response.text).replace('\\/', '/')
-              urls = re.findall(r'https?://[^\"\'\s<>]+', text)
-              candidates = []
-              for value in urls:
-                  value = value.rstrip('),;')
-                  low = value.lower()
-                  if ('wp.com' in low or 'wordpress.com' in low) and '/2015/03/' in low and any(ext in low for ext in ('.jpg', '.jpeg', '.png', '.webp')):
-                      if value not in candidates:
-                          candidates.append(value)
-              print('blog image candidates:', len(candidates))
+              response = session.get(api_url, timeout=40)
+              print('wordpress api:', response.status_code, len(response.content))
+              response.raise_for_status()
+              post = response.json()
+              attachments = list((post.get('attachments') or {}).values())
+              print('wordpress attachments:', len(attachments))
               saved = 0
-              for value in candidates:
-                  if saved >= 5:
+              for attachment in attachments:
+                  if saved >= 6:
                       break
-                  if save_image(value, f'visit-{saved + 1:02d}', blog_url):
+                  url = attachment.get('URL') or attachment.get('url')
+                  mime = (attachment.get('mime_type') or '').lower()
+                  if not url or (mime and not mime.startswith('image/')):
+                      continue
+                  if save_image(url, f'visit-{saved + 1:02d}', blog_url):
                       saved += 1
           except Exception as exc:
-              print('blog error:', exc)
+              print('wordpress api error:', exc)
 
           downloaded = list(out.glob('*'))
           if len(downloaded) < 2:
