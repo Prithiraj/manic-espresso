@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Discover and download current demo photography
+      - name: Download demo-only Manic Espresso photography
         shell: bash
         run: |
           set -euo pipefail
@@ -27,68 +27,81 @@ jobs:
           import pathlib
           import re
           import requests
-          from urllib.parse import urljoin
 
           out = pathlib.Path('site/assets/images')
-          headers = {
-              'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36',
-              'Referer': 'https://www.findglocal.com/AU/Perth/216035731919391/Manic-Espresso',
-          }
+          ua = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36'
+          session = requests.Session()
+          session.headers.update({'User-Agent': ua})
 
-          source = 'https://www.findglocal.com/AU/Perth/216035731919391/Manic-Espresso'
-          page = requests.get(source, headers=headers, timeout=30)
-          page.raise_for_status()
-          text = html.unescape(page.text).replace('\\/', '/')
-
-          patterns = [
-              r'https?://img\d+\.findglocal\.com/[^\"\'\s<>]+',
-              r'//img\d+\.findglocal\.com/[^\"\'\s<>]+',
-          ]
-          candidates = []
-          for pattern in patterns:
-              for value in re.findall(pattern, text):
-                  if value.startswith('//'):
-                      value = 'https:' + value
-                  value = value.rstrip('),;')
-                  if any(ext in value.lower() for ext in ('.jpg', '.jpeg', '.png', '.webp')) and value not in candidates:
-                      candidates.append(value)
-
-          print(f'Found {len(candidates)} FindGlocal image candidates')
-          for value in candidates[:30]:
-              print('candidate:', value)
-
-          saved = 0
-          for value in candidates:
-              if saved >= 6:
-                  break
+          def save_image(url, stem, referer=None):
               try:
-                  response = requests.get(value, headers=headers, timeout=30)
-                  content_type = response.headers.get('content-type', '')
+                  headers = {'Referer': referer} if referer else {}
+                  response = session.get(url, headers=headers, timeout=40)
+                  content_type = response.headers.get('content-type', '').lower()
                   if response.status_code != 200 or not content_type.startswith('image/') or len(response.content) < 15000:
-                      print('skip:', response.status_code, content_type, len(response.content), value)
-                      continue
+                      print('skip:', response.status_code, content_type, len(response.content), url)
+                      return False
                   suffix = '.png' if 'png' in content_type else '.webp' if 'webp' in content_type else '.jpg'
-                  target = out / f'manic-{saved + 1:02d}{suffix}'
+                  target = out / f'{stem}{suffix}'
                   target.write_bytes(response.content)
-                  print('saved:', target, len(response.content), value)
-                  saved += 1
+                  print('saved:', target, len(response.content), url)
+                  return True
               except Exception as exc:
-                  print('error:', value, exc)
+                  print('error:', url, exc)
+                  return False
 
-          # A known real interior photo from Manic Espresso's Quandoo listing.
-          interior_url = 'https://d24horgtq2wtu8.cloudfront.net/80fa9ae7-0d23-48f2-94fe-24da97b44bfd/686659_sld.jpg'
+          # Real Manic Espresso interior photo surfaced by the current Quandoo listing.
+          save_image(
+              'https://d24horgtq2wtu8.cloudfront.net/80fa9ae7-0d23-48f2-94fe-24da97b44bfd/686659_sld.jpg',
+              'interior',
+              'https://social.quandoo.com/en/groups/Manic%20Espresso'
+          )
+
+          # Historical editorial Manic Espresso food photo. Demo only; credited by Urban List to Elle Borgward.
+          urban_url = 'https://www.theurbanlist.com/perth/directory/manic-espresso'
           try:
-              response = requests.get(interior_url, headers={'User-Agent': headers['User-Agent']}, timeout=30)
-              if response.status_code == 200 and response.headers.get('content-type', '').startswith('image/') and len(response.content) > 15000:
-                  (out / 'interior.jpg').write_bytes(response.content)
-                  print('saved:', out / 'interior.jpg', len(response.content), interior_url)
-              else:
-                  print('interior skipped:', response.status_code, response.headers.get('content-type'), len(response.content))
+              response = session.get(urban_url, timeout=40)
+              print('urban list page:', response.status_code, len(response.content))
+              text = html.unescape(response.text).replace('\\/', '/')
+              meta_patterns = [
+                  r'<meta[^>]+property=[\"\']og:image[\"\'][^>]+content=[\"\']([^\"\']+)',
+                  r'<meta[^>]+content=[\"\']([^\"\']+)[\"\'][^>]+property=[\"\']og:image[\"\']',
+                  r'<meta[^>]+name=[\"\']twitter:image[\"\'][^>]+content=[\"\']([^\"\']+)',
+              ]
+              for pattern in meta_patterns:
+                  match = re.search(pattern, text, re.I)
+                  if match and save_image(match.group(1), 'food-editorial', urban_url):
+                      break
           except Exception as exc:
-              print('interior error:', exc)
+              print('urban list error:', exc)
 
-          if not any(out.glob('manic-*')) and not (out / 'interior.jpg').exists():
-              raise SystemExit('No usable demo images were downloaded.')
+          # Historical first-hand visit photography from the Manic Espresso Como review page.
+          blog_url = 'https://frenchtoastandindiepop.wordpress.com/2015/03/14/manic-espresso-como/'
+          try:
+              response = session.get(blog_url, timeout=40)
+              print('blog page:', response.status_code, len(response.content))
+              text = html.unescape(response.text).replace('\\/', '/')
+              urls = re.findall(r'https?://[^\"\'\s<>]+', text)
+              candidates = []
+              for value in urls:
+                  value = value.rstrip('),;')
+                  low = value.lower()
+                  if ('wp.com' in low or 'wordpress.com' in low) and '/2015/03/' in low and any(ext in low for ext in ('.jpg', '.jpeg', '.png', '.webp')):
+                      if value not in candidates:
+                          candidates.append(value)
+              print('blog image candidates:', len(candidates))
+              saved = 0
+              for value in candidates:
+                  if saved >= 5:
+                      break
+                  if save_image(value, f'visit-{saved + 1:02d}', blog_url):
+                      saved += 1
+          except Exception as exc:
+              print('blog error:', exc)
+
+          downloaded = list(out.glob('*'))
+          if len(downloaded) < 2:
+              raise SystemExit(f'Only {len(downloaded)} usable demo images were downloaded; refusing to commit an incomplete set.')
           PY
 
           echo 'Downloaded files:'
