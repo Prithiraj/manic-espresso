@@ -1,6 +1,7 @@
 .place {
   position: relative;
   min-height: 100svh;
+  overflow: clip;
 }
 
 .place > div:first-child { position: relative; z-index: 8; }
@@ -134,7 +135,11 @@
 }
 
 @media (max-width: 620px) {
-  .place-photos.cafe-stage { min-height: 27rem; margin-top: 1.2rem; }
+  .place-photos.cafe-stage {
+    min-height: 27rem;
+    margin-top: 1.2rem;
+    overflow: clip;
+  }
   .place-photos.cafe-stage > img:first-of-type { width: 34%; height: 39%; }
   .place-photos.cafe-stage > img:nth-of-type(2) { width: 36%; height: 34%; }
   .cafe-label { width: 4.7rem; bottom: 5%; }
