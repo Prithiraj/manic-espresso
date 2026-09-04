@@ -22,6 +22,7 @@
   position: relative;
   min-height: clamp(34rem, 48vw, 47rem);
   isolation: isolate;
+  overflow: clip;
 }
 
 .final-stage::before {
@@ -152,5 +153,8 @@
 @media (prefers-reduced-motion: reduce) {
   .final-canvas,
   .final-model-fallback,
-  .final-real-photo { transition: none !important; transform: rotate(2.4deg) !important; }
+  .final-real-photo { transition: none !important; }
+  .final-canvas,
+  .final-model-fallback { transform: none !important; }
+  .final-real-photo { transform: rotate(2.4deg) !important; }
 }
