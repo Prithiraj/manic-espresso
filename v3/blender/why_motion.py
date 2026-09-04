@@ -26,15 +26,30 @@ def parse_args():
 
 
 def make_rig(name, object_names):
-    rig = bpy.data.objects.new(name, None)
-    rig.empty_display_type = 'PLAIN_AXES'
-    bpy.context.collection.objects.link(rig)
-
-    found = []
+    objects = []
     for object_name in object_names:
         obj = bpy.data.objects.get(object_name)
         if obj is None:
             raise RuntimeError(f'Missing Why object for motion: {object_name}')
+        objects.append(obj)
+
+    # All animated parts for a still life must stay underneath that still life's
+    # original root. Otherwise Three.js cannot hide the other two card scenes
+    # while scissor-rendering one card at a time.
+    original_parent = objects[0].parent
+    if original_parent is None:
+        raise RuntimeError(f'{objects[0].name} has no Why scene root parent')
+    if any(obj.parent != original_parent for obj in objects):
+        raise RuntimeError(f'Why rig {name} mixes objects from different scene roots')
+
+    rig = bpy.data.objects.new(name, None)
+    rig.empty_display_type = 'PLAIN_AXES'
+    bpy.context.collection.objects.link(rig)
+    rig.parent = original_parent
+    rig.matrix_parent_inverse = original_parent.matrix_world.inverted()
+
+    found = []
+    for obj in objects:
         matrix = obj.matrix_world.copy()
         obj.parent = rig
         obj.matrix_world = matrix
@@ -67,7 +82,6 @@ def keyframe_motion(rig, action_name, start_location=(0, 0, 0), end_location=(0,
     for curve in action.fcurves:
         for point in curve.keyframe_points:
             point.interpolation = 'BEZIER'
-
 
 
 def build_motion():
