@@ -7,6 +7,7 @@
   .hero-art { order: 5; min-height: 21rem; margin-top: .35rem; }
   .hero-facts { order: 6; margin-top: .45rem; }
 
+  .scene-canvas { transform: translateY(-13%); }
   .photo-card-main { width: 70%; height: 55%; }
   .photo-card-coffee { width: 30%; height: 34%; }
   .hero-seal { bottom: 18%; }
@@ -19,5 +20,6 @@
   .hero-actions .button { min-height: 2.85rem; padding: .72rem 1.05rem; }
   .hero-actions .text-link { font-size: .9rem; }
   .hero-art { min-height: 20rem; }
+  .scene-canvas { transform: translateY(-16%); }
   .hero-facts { padding-top: .8rem; }
 }
