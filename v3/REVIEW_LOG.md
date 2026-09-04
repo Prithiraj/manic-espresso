@@ -8,8 +8,8 @@ V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enou
 |---|---|---|---|---|---|---|
 | Hero ceramic | Pass | Pass | Pass | Pass | Pass | **Approved** |
 | Menu exploded breakfast | Pass | Pass | Pass | Pass | Pass | **Approved** |
-| Café miniature cutaway | Pass | Pass | Pass | Pending | Pass | **Static gate passed** |
-| Why Manic still lifes | Not started | — | — | — | — | Planned |
+| Café miniature cutaway | Pass | Pass | Pass | Pass | Pass | **Approved** |
+| Why Manic still lifes | Planned | — | — | — | — | **Next slice** |
 | Final ceramic callback | Not started | — | — | — | — | Planned |
 | Visit location token | Not started | — | — | — | — | Planned |
 | Gallery photo table | Not started | — | — | — | — | Planned |
@@ -64,11 +64,11 @@ Plate/slab stay fixed while ingredient groups separate in a shallow X/Y/Z spiral
 
 ---
 
-# Slice 03 — Café miniature cutaway
+# Slice 03 — Café miniature cutaway — APPROVED
 
 ## Static Blender model
 
-The current miniature includes:
+The miniature includes:
 
 - cream physical-model base and warm floor insert
 - dark back and side walls
@@ -88,7 +88,7 @@ This is deliberately a stylised/dollhouse interpretation based on visible Manic 
 
 - `cafe-static-desktop-1600x1000.png`
 - `cafe-static-mobile-390x844.png`
-- generated `manic-cafe.glb` (~819 KiB before animation/compression)
+- generated `manic-cafe.glb` (~819 KiB before final compression)
 
 ## Desktop static review — PASS
 
@@ -106,24 +106,22 @@ This is deliberately a stylised/dollhouse interpretation based on visible Manic 
 - Real exterior/interior images remain present as spatial anchors.
 - The section remains complete without WebGL; the existing two real photos are the fallback and automated QA verifies them.
 
-## Performance review — PASS FOR STATIC SLICE 03
+## Motion review — PASS
 
-- Café GLB is ~819 KiB before final compression.
+**Reviewed:** `cafe-cutaway-mid-1600x1000.png` after a dedicated framing correction.
+
+- Blender-authored clip `ACT_CAFE_CUTAWAY_FACADE` physically slides the front façade left and slightly forward instead of dissolving it.
+- The floor, back wall, counter, tables and chairs remain stable, so the interior continues to feel grounded while the façade opens.
+- The Three.js camera performs only a restrained move inward; it does not orbit around the miniature or make the section feel game-like.
+- Real interior photography gains visual weight during the cutaway via opacity/scale, preserving the transition back to evidence-backed imagery.
+- The first motion QA revealed that the scene scrolled out of the viewport too quickly. The fix makes the copy and café stage sticky on desktop through the cutaway window, keeping the motion visible without changing mobile flow.
+- Reduced motion remains the approved static dollhouse composition.
+
+## Performance review — PASS
+
+- Café GLB remains under ~1 MB before final compression.
 - One shadow-casting key light is used.
-- Static render does not run an idle RAF loop.
-- Hero/Menu/Café are still eager-loaded during development; section-level lazy loading is a release optimisation after visual slices are locked.
+- RAF work only continues while motion is converging and the section is visible.
+- Real-photo fallback is covered by automated QA.
 
-## Static verdict
-
-**APPROVED for the Café cutaway motion pass.**
-
-## Motion requirements
-
-1. Façade movement must be Blender-authored via the `RIG_CAFE_FACADE` group.
-2. Façade should slide/open sideways and slightly forward rather than disappearing or dissolving.
-3. Camera should move only enough to peer deeper toward counter/chalkboard detail.
-4. The physical base/floor/back wall remain stable to preserve grounding.
-5. Real interior photography should gain visual priority toward the end of the motion sequence.
-6. Reduced motion stays on the approved static dollhouse frame.
-
-**Current verdict: STATIC GATE PASSED — BUILDING CUTAWAY MOTION.**
+**Verdict: LOCKED. Proceed to Slice 04 — Why Manic still lifes.**
