@@ -31,6 +31,7 @@
   object-fit: cover;
   border-radius: 1rem;
   box-shadow: 0 24px 60px rgba(63,50,40,.15);
+  will-change: transform, opacity;
 }
 
 .place-photos.cafe-stage > img:first-of-type {
@@ -38,6 +39,7 @@
   right: 1%;
   width: 27%;
   height: 39%;
+  opacity: var(--cafe-exterior-opacity, 1);
   transform: rotate(2.8deg);
 }
 
@@ -46,7 +48,9 @@
   bottom: 4%;
   width: 29%;
   height: 34%;
-  transform: rotate(-1.8deg);
+  opacity: var(--cafe-interior-opacity, .78);
+  transform: rotate(-1.8deg) scale(var(--cafe-interior-scale, 1));
+  transform-origin: 50% 50%;
 }
 
 .cafe-canvas {
@@ -105,6 +109,12 @@
 
 .cafe-stage.cafe-model-failed .cafe-fallback-note { display: block; }
 
+@media (prefers-reduced-motion: no-preference) {
+  .place-photos.cafe-stage > img {
+    transition: opacity .14s linear, transform .14s linear;
+  }
+}
+
 @media (max-width: 980px) {
   .place-photos.cafe-stage { min-height: 40rem; }
 }
@@ -117,5 +127,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cafe-canvas { transition: none !important; }
+  .cafe-canvas,
+  .place-photos.cafe-stage > img { transition: none !important; }
 }
