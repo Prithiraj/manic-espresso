@@ -4,170 +4,79 @@ V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enou
 
 ## Status
 
-| Slice | Static | Desktop | Mobile | Motion | Performance | Status |
+| Slice | Static | Desktop | Mobile | Motion | Fallback / Performance | Status |
 |---|---|---|---|---|---|---|
 | Hero ceramic | Pass | Pass | Pass | Pass | Pass | **Approved** |
 | Menu exploded breakfast | Pass | Pass | Pass | Pass | Pass | **Approved** |
 | Café miniature cutaway | Pass | Pass | Pass | Pass | Pass | **Approved** |
-| Why Manic still lifes | Pass | Pass | Pass | Pending | Pass | **Static gate passed** |
-| Final ceramic callback | Not started | — | — | — | — | Planned |
-| Visit location token | Not started | — | — | — | — | Planned |
-| Gallery photo table | Not started | — | — | — | — | Planned |
-| Review paper | Not started | — | — | — | — | Planned |
-| Proof tokens | Not started | — | — | — | — | Deferred |
+| Why Manic still lifes | Pass | Pass | Pass | Pass | Pass | **Approved** |
+| Final ceramic callback | Pass | Pass | Pass | Pass | Pass | **Approved** |
+| Visit location token | Pass | Pass | Pass | Pass | Pass | **Approved** |
+| Gallery photo table | Pass | Pass | Pass | Pass | Pass | **Approved** |
+| Review paper | Pass | Pass | Pass | Pass | Pass | **Approved** |
+| Proof tokens | — | — | — | — | — | **Deferred intentionally** |
 
----
+## Latest complete QA gate
 
-# Slice 01 — Hero ceramic — APPROVED
+Full V3 Blender generation, production build, desktop/mobile static checks, motion checks, fallbacks, overflow checks and release screenshots passed in GitHub Actions run **33870120774**.
 
-**Reviewed:** `hero-desktop-1600x1000.png`, `hero-mobile-390x844.png`, `hero-scroll-mid-1600x1000.png`.
+Release-level screenshots reviewed:
 
-- Custom Blender cup/saucer/spoon/napkin/floral still life reads as crafted geometry, not primitives.
-- Real Manic interior/coffee/pancake photography remains important.
-- Warm upper-left/front-left key, restrained perspective and contact shadows make the set physically grounded.
-- Blender clips `ACT_HERO_CUP_LIFT` and `ACT_HERO_SPOON_SHIFT` are scrubbed by Three.js on scroll.
-- Reduced motion holds clip time zero at the approved static frame.
-- Hero GLB remains roughly 0.63 MB before final compression.
+- `release-desktop-1600x1000-full.png`
+- `release-mobile-390x844-full.png`
 
-**Verdict: LOCKED.**
+The full-page review confirms a coherent progression from real-photo/ceramic Hero → Why Manic still lifes → exploded breakfast → café cutaway → quiet review paper → real-photo gallery → location token → final ceramic callback. The 3D vocabulary remains tactile/editorial rather than game-like, and real Manic imagery remains present throughout.
 
----
+## Slice notes
 
-# Slice 02 — Menu exploded breakfast — APPROVED
+Detailed review records live in:
 
-**Reviewed:** `menu-static-desktop-1600x1000.png`, `menu-static-mobile-390x844.png`, `menu-exploded-mid-1600x1000.png`.
+- [`reviews/04-why.md`](reviews/04-why.md)
+- [`reviews/05-final.md`](reviews/05-final.md)
+- [`reviews/06-visit.md`](reviews/06-visit.md)
+- [`reviews/07-gallery.md`](reviews/07-gallery.md)
+- [`reviews/08-review.md`](reviews/08-review.md)
 
-### Static composition
+Earlier Hero, Menu and Café decisions are retained in commit history and the V3 plan.
 
-- Custom ceramic plate/rim, layered toast, irregular egg white/yolk, avocado fan, tomato discs, feta, greens, fork and knife are immediately recognisable as an editorial breakfast sculpture.
-- The composition is explicitly not presented as Manic Espresso's exact current plating.
-- Real Manic breakfast-roll photography remains visible as the truth/reference layer.
-- Plate/slab remain grounded under the same morning-light direction as Hero.
-- HTML menu rows stay the primary reading layer.
+## Release decision
 
-### Motion
+### Static composition — PASS
 
-Blender-authored clips confirmed:
+- Major 3D objects have clear silhouettes and purposeful scale.
+- Warm upper-left morning-light direction remains coherent across slices.
+- Contact/cast shadows ground hero objects.
+- HTML headings/actions remain the information hierarchy.
+- Real photography is never replaced by a synthetic 3D claim.
 
-- `ACT_MENU_EXPLODE_TOAST`
-- `ACT_MENU_EXPLODE_EGG`
-- `ACT_MENU_EXPLODE_AVOCADO`
-- `ACT_MENU_EXPLODE_TOMATO`
-- `ACT_MENU_EXPLODE_FETA`
-- `ACT_MENU_EXPLODE_GREENS`
-- `ACT_MENU_EXPLODE_FORK`
-- `ACT_MENU_EXPLODE_KNIFE`
+### Motion — PASS
 
-Plate/slab stay fixed while ingredient groups separate in a shallow X/Y/Z spiral. Camera rises/dollies slightly; cutlery remains a scale cue. The sticky-stage correction keeps the plate visible through the useful scroll window. Reduced motion stays assembled.
+- Blender clips are scroll-scrubbed rather than free-running.
+- Camera motion is restrained and secondary to object/story motion.
+- Reverse scrolling remains stable.
+- `prefers-reduced-motion` holds deliberately authored static states.
 
-**Verdict: LOCKED.**
+### Responsive — PASS
 
----
+- Desktop QA uses 1600×1000.
+- Mobile QA uses 390×844.
+- Mobile compositions are reframed, not simply shrunk.
+- No horizontal overflow in automated checks.
 
-# Slice 03 — Café miniature cutaway — APPROVED
+### Fallback — PASS
 
-## Static Blender model
+Each GLB-dependent slice has automated failure coverage. Semantic HTML and real photography remain usable if WebGL/model loading fails.
 
-The miniature includes:
+### Performance — PASS FOR PREVIEW / OPTIMISATION STILL AVAILABLE
 
-- cream physical-model base and warm floor insert
-- dark back and side walls
-- chalkboard-style focal panel with abstract chalk strokes
-- timber counter and light worktop
-- simplified espresso-machine silhouette
-- two café tables
-- four simplified chairs
-- two cup/coffee scale props
-- counter vase, stems and floral accents
-- cream/brass façade/window/door framing
-- dark sign block with abstract line detail
+The current model set is within the accepted preview budget and rendering is visibility/scroll driven. Final production optimisation can still add stronger lazy-loading, Meshopt/Draco/KTX2 and more aggressive model disposal without changing the approved visual frames.
 
-This is deliberately a stylised/dollhouse interpretation based on visible Manic cues, not a claimed architectural survey.
+## Proof token decision
 
-## Static artifacts reviewed
+The optional proof-token Blender slice is **not being built**. The current rating/review/open-days proof bar works better as a quiet typographic reset between the rich Hero and the Why Manic section. Adding 3D there would reduce pacing and make the experience feel over-decorated.
 
-- `cafe-static-desktop-1600x1000.png`
-- `cafe-static-mobile-390x844.png`
-- generated `manic-cafe.glb` (~819 KiB before final compression)
+## Verdict
 
-## Desktop static review — PASS
+**V3 visual slice set is RELEASE-CANDIDATE APPROVED for the demo preview.**
 
-- **Silhouette:** façade frame immediately makes the model read as a small café environment rather than a collection of boxes.
-- **Depth:** back wall, counter, foreground tables and open roof create clear foreground/midground/background separation.
-- **Perspective:** three-quarter dollhouse camera reveals exterior framing and interior simultaneously.
-- **Lighting:** the established upper-left/front-left morning key creates legible table/chair/counter shadows without blacking out the charcoal walls.
-- **Materials:** cream trim, charcoal wall, timber floor/counter, brass accents, ceramic cups and rose flowers are visibly distinct.
-- **Real-photo relationship:** exterior/sign photography and interior photography flank the miniature and clearly distinguish real evidence from 3D interpretation.
-
-## Mobile static review — PASS
-
-- More frontal/tighter framing keeps the miniature readable at 390px.
-- Tables, counter and façade remain distinguishable rather than collapsing into noise.
-- Real exterior/interior images remain present as spatial anchors.
-- The section remains complete without WebGL; the existing two real photos are the fallback and automated QA verifies them.
-
-## Motion review — PASS
-
-**Reviewed:** `cafe-cutaway-mid-1600x1000.png` after a dedicated framing correction.
-
-- Blender-authored clip `ACT_CAFE_CUTAWAY_FACADE` physically slides the front façade left and slightly forward instead of dissolving it.
-- The floor, back wall, counter, tables and chairs remain stable, so the interior continues to feel grounded while the façade opens.
-- The Three.js camera performs only a restrained move inward; it does not orbit around the miniature or make the section feel game-like.
-- Real interior photography gains visual weight during the cutaway via opacity/scale, preserving the transition back to evidence-backed imagery.
-- The first motion QA revealed that the scene scrolled out of the viewport too quickly. The fix makes the copy and café stage sticky on desktop through the cutaway window, keeping the motion visible without changing mobile flow.
-- Reduced motion remains the approved static dollhouse composition.
-
-## Performance review — PASS
-
-- Café GLB remains under ~1 MB before final compression.
-- One shadow-casting key light is used.
-- RAF work only continues while motion is converging and the section is visible.
-- Real-photo fallback is covered by automated QA.
-
-**Verdict: LOCKED. Proceed to Slice 04 — Why Manic still lifes.**
-
----
-
-# Slice 04 — Why Manic still lifes
-
-## Static artifacts reviewed
-
-- `why-static-desktop-1600x1000.png`
-- `why-static-mobile-390x844.png`
-- generated `manic-why.glb` (~1.2 MiB before final compression)
-
-## Desktop static review — PASS
-
-- **Generous plates:** the plate/toast/egg/avocado/tomato arrangement reads immediately as an editorial breakfast still life without presenting itself as an exact Manic menu photograph.
-- **A warm welcome:** table, cup, vase and pulled-out chair form a clear hospitality silhouette; the chair successfully suggests a place being made for someone without modelling people.
-- **A quiet local find:** cream/charcoal façade fragment, dark sign, opening and planter read as a miniature street-facing café cue and visually connect to the larger Café cutaway slice.
-- All three scenes share the same warm upper-left morning-light direction and subdued tactile palette.
-- The scissored single-canvas renderer keeps each Blender group spatially aligned with its HTML card while avoiding three WebGL contexts.
-- HTML copy remains visually dominant and fully readable.
-
-## Mobile static review — PASS
-
-- The same single canvas renders each still life into the stacked card viewport rather than shrinking the desktop row.
-- Plate and welcome scenes remain legible at 390px; text does not collide with the 3D objects.
-- Mobile screenshot confirms no horizontal overflow.
-
-## Fallback / performance — PASS FOR STATIC SLICE 04
-
-- One shared GLB and one renderer are used for all three still lifes.
-- The model is ~1.2 MiB before final compression, within the provisional target for the combined three-scene asset.
-- Rendering is event-driven (load/intersection/resize), with no idle animation loop in the static phase.
-- Automated fallback QA confirms the original evidence-backed HTML cards remain visible if the GLB fails.
-
-## Static verdict
-
-**APPROVED for motion pass.**
-
-## Motion requirements
-
-1. Plate ingredients may start lightly separated and settle into the approved static composition; reduced motion must show the assembled static frame.
-2. Welcome chair may move outward only a small amount and cup may bias toward camera; no character-like behavior.
-3. Quiet-local-find motion should reveal depth through a small doorway/façade shift, not a theatrical swinging door.
-4. The cards remain text-first; motion must not continuously run after the section settles.
-5. Use Blender-authored clips and Three.js scroll scrubbing rather than recreating the object motion with ad hoc JS transforms.
-
-**Current verdict: STATIC GATE PASSED — BUILDING WHY MANIC MOTION.**
+The remaining work is integration/publish verification and optional performance optimisation—not additional 3D spectacle.
