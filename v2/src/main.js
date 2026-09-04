@@ -1,4 +1,5 @@
 import './styles.css';
+import './mobile-tune.css';
 import { initCeramicScene } from './scene.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
