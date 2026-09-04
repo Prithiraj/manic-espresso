@@ -44,3 +44,39 @@ test('mobile static frame 390x844', async ({ page }) => {
     fullPage: false
   });
 });
+
+test('desktop WebGL scene changes on scroll when motion is allowed', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await waitForRender(page);
+
+  const canvas = page.locator('#scene-canvas');
+  await expect(canvas).toBeVisible();
+
+  const beforeBox = await canvas.boundingBox();
+  expect(beforeBox).not.toBeNull();
+  const before = await page.screenshot({ clip: beforeBox });
+
+  await page.evaluate(() => window.scrollTo({ top: 320, behavior: 'instant' }));
+  await page.waitForTimeout(700);
+
+  const afterBox = await canvas.boundingBox();
+  expect(afterBox).not.toBeNull();
+  const visibleAfterBox = {
+    x: Math.max(0, afterBox.x),
+    y: Math.max(0, afterBox.y),
+    width: Math.min(afterBox.width, 1600 - Math.max(0, afterBox.x)),
+    height: Math.min(afterBox.height, 1000 - Math.max(0, afterBox.y))
+  };
+  expect(visibleAfterBox.width).toBeGreaterThan(100);
+  expect(visibleAfterBox.height).toBeGreaterThan(100);
+
+  const after = await page.screenshot({ clip: visibleAfterBox });
+  expect(Buffer.compare(before.subarray(0, Math.min(before.length, after.length)), after.subarray(0, Math.min(before.length, after.length)))).not.toBe(0);
+
+  await page.screenshot({
+    path: 'qa-screenshots/desktop-scroll-1600x1000.png',
+    fullPage: false
+  });
+});

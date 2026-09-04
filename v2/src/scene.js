@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const smoothstep = (value) => value * value * (3 - 2 * value);
 
 function createContactTexture() {
   const canvas = document.createElement('canvas');
@@ -297,13 +298,21 @@ export function initCeramicScene(canvas, host) {
   const ambient = new THREE.AmbientLight(0xfff8ed, 0.18);
   scene.add(ambient);
 
+  const ceramicBasePosition = ceramicSet.position.clone();
+  const ceramicBaseRotationY = ceramicSet.rotation.y;
+  const plinthBasePosition = plinth.position.clone();
+  const keyBasePosition = key.position.clone();
+  const contactBaseOpacity = contact.material.opacity;
+
   let frame = frameForWidth(host.clientWidth || window.innerWidth);
   let baseCamera = frame.camera.clone();
   let baseLookAt = frame.lookAt.clone();
+  let baseScenePosition = frame.scenePosition.clone();
   let targetPointerX = 0;
   let targetPointerY = 0;
   let pointerX = 0;
   let pointerY = 0;
+  let targetScrollProgress = 0;
   let scrollProgress = 0;
   let visible = true;
   let raf = 0;
@@ -315,6 +324,17 @@ export function initCeramicScene(canvas, host) {
     document.documentElement.dataset.sceneReady = 'true';
   };
 
+  const resetMotionState = () => {
+    sceneRoot.position.copy(baseScenePosition);
+    sceneRoot.rotation.set(0, 0, 0);
+    ceramicSet.position.copy(ceramicBasePosition);
+    ceramicSet.rotation.set(0, ceramicBaseRotationY, 0);
+    plinth.position.copy(plinthBasePosition);
+    contact.material.opacity = contactBaseOpacity;
+    contact.scale.set(1, 1, 1);
+    key.position.copy(keyBasePosition);
+  };
+
   const applyFrame = () => {
     const rect = host.getBoundingClientRect();
     const width = Math.max(1, Math.round(rect.width));
@@ -322,6 +342,7 @@ export function initCeramicScene(canvas, host) {
     frame = frameForWidth(width);
     baseCamera = frame.camera.clone();
     baseLookAt = frame.lookAt.clone();
+    baseScenePosition = frame.scenePosition.clone();
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, frame.dpr));
     renderer.setSize(width, height, false);
@@ -329,7 +350,7 @@ export function initCeramicScene(canvas, host) {
     camera.fov = frame.fov;
     camera.updateProjectionMatrix();
 
-    sceneRoot.position.copy(frame.scenePosition);
+    resetMotionState();
     sceneRoot.scale.setScalar(frame.sceneScale);
 
     if (key.shadow.mapSize.x !== frame.shadowSize) {
@@ -346,10 +367,20 @@ export function initCeramicScene(canvas, host) {
   };
 
   const updateScroll = () => {
+    if (reducedMotion) {
+      targetScrollProgress = 0;
+      scrollProgress = 0;
+      resetMotionState();
+      camera.position.copy(baseCamera);
+      camera.lookAt(baseLookAt);
+      render();
+      return;
+    }
+
     const rect = host.getBoundingClientRect();
     const travel = Math.max(window.innerHeight, rect.height);
-    scrollProgress = clamp(-rect.top / travel, 0, 1);
-    if (reducedMotion) render();
+    targetScrollProgress = clamp(-rect.top / travel, 0, 1);
+    start();
   };
 
   const onPointerMove = (event) => {
@@ -372,18 +403,54 @@ export function initCeramicScene(canvas, host) {
 
     pointerX += (targetPointerX - pointerX) * 0.065;
     pointerY += (targetPointerY - pointerY) * 0.065;
+    scrollProgress += (targetScrollProgress - scrollProgress) * 0.085;
+
+    const scroll = smoothstep(scrollProgress);
+    const lift = Math.sin(scroll * Math.PI) * 0.08 + scroll * 0.10;
 
     camera.position.set(
-      baseCamera.x + pointerX * 0.15,
-      baseCamera.y - pointerY * 0.08 + scrollProgress * 0.09,
-      baseCamera.z + scrollProgress * 0.14
+      baseCamera.x + pointerX * 0.15 - scroll * 0.22,
+      baseCamera.y - pointerY * 0.08 + scroll * 0.28,
+      baseCamera.z - scroll * 0.46
     );
 
     const look = baseLookAt.clone();
-    look.x += pointerX * 0.055;
+    look.x += pointerX * 0.055 + scroll * 0.14;
     look.y -= pointerY * 0.025;
-    look.y += scrollProgress * 0.035;
+    look.y += scroll * 0.07;
+    look.z += scroll * 0.08;
     camera.lookAt(look);
+
+    sceneRoot.position.set(
+      baseScenePosition.x - scroll * 0.06,
+      baseScenePosition.y + scroll * 0.025,
+      baseScenePosition.z
+    );
+    sceneRoot.rotation.y = -scroll * 0.025;
+
+    ceramicSet.position.set(
+      ceramicBasePosition.x - scroll * 0.10,
+      ceramicBasePosition.y + lift,
+      ceramicBasePosition.z + scroll * 0.16
+    );
+    ceramicSet.rotation.y = ceramicBaseRotationY + scroll * 0.42;
+    ceramicSet.rotation.z = -scroll * 0.028;
+
+    plinth.position.set(
+      plinthBasePosition.x + scroll * 0.035,
+      plinthBasePosition.y,
+      plinthBasePosition.z - scroll * 0.12
+    );
+
+    contact.material.opacity = contactBaseOpacity - scroll * 0.30;
+    contact.scale.set(1 - scroll * 0.08, 1 - scroll * 0.05, 1);
+
+    key.position.set(
+      keyBasePosition.x + scroll * 0.62,
+      keyBasePosition.y - scroll * 0.22,
+      keyBasePosition.z - scroll * 0.38
+    );
+
     render();
     raf = requestAnimationFrame(tick);
   };
