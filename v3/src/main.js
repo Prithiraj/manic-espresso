@@ -2,12 +2,14 @@ import './styles.css';
 import './why-slice.css';
 import './menu-slice.css';
 import './cafe-slice.css';
+import './gallery-slice.css';
 import './visit-slice.css';
 import './final-slice.css';
 import { initHeroScene } from './hero-scene.js';
 import { initWhyScene } from './why-scene.js';
 import { initMenuScene } from './menu-scene.js';
 import { initCafeScene } from './cafe-scene.js';
+import { initGalleryScene } from './gallery-scene.js';
 import { initVisitScene } from './visit-scene.js';
 import { initFinalScene } from './final-scene.js';
 
@@ -109,6 +111,16 @@ function initCafe() {
   }
 }
 
+function initGallery() {
+  const canvas = document.getElementById('gallery-canvas');
+  const host = document.querySelector('[data-gallery-stage]');
+  const dispose = initGalleryScene(canvas, host);
+  if (!dispose && !document.documentElement.dataset.v3GalleryModel) {
+    host?.classList.add('gallery-model-failed');
+    document.documentElement.dataset.v3GalleryModel = 'fallback';
+  }
+}
+
 function initVisit() {
   const canvas = document.getElementById('visit-canvas');
   const host = document.querySelector('[data-visit-stage]');
@@ -153,6 +165,7 @@ initHero();
 initWhy();
 initMenu();
 initCafe();
+initGallery();
 initVisit();
 initFinal();
 markReady();
