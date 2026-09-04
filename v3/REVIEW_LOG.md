@@ -21,10 +21,10 @@ Each slice is reviewed against:
 
 | Slice | Static build | Desktop review | Mobile review | Motion review | Performance | Status |
 |---|---|---|---|---|---|---|
-| Hero ceramic | Pass | Pass | Pass | Pending | Pass | **Static gate passed** |
+| Hero ceramic | Pass | Pass | Pass | Pass | Pass | **Approved** |
 | Proof tokens | Not started | — | — | — | — | Deferred |
 | Why Manic still lifes | Not started | — | — | — | — | Planned |
-| Menu exploded breakfast | Not started | — | — | — | — | Planned |
+| Menu exploded breakfast | In progress | Pending | Pending | Pending | Pending | **Building next** |
 | Café miniature cutaway | Not started | — | — | — | — | Planned |
 | Review paper | Not started | — | — | — | — | Planned |
 | Gallery photo table | Not started | — | — | — | — | Planned |
@@ -60,15 +60,16 @@ One warm key from upper-left/front-left, weak cool-neutral fill, soft environmen
 
 ### QA run
 
-Static QA completed successfully after fixing the Ubuntu Blender package's missing `numpy` dependency. CI now installs Blender 4.0.2 plus `python3-numpy`, generates the GLB headlessly, builds the Vite production bundle, and renders deterministic reduced-motion screenshots.
+Static QA completed successfully after fixing the Ubuntu Blender package's missing `numpy` dependency. CI installs Blender 4.0.2 plus `python3-numpy`, generates the GLB headlessly, builds the Vite production bundle, and renders deterministic reduced-motion screenshots.
 
 Artifacts reviewed:
 
 - `hero-desktop-1600x1000.png`
 - `hero-mobile-390x844.png`
-- generated `manic-hero.glb` (~636 KB before further compression work)
+- `hero-scroll-mid-1600x1000.png`
+- generated `manic-hero.glb` (~629 KiB before further compression work)
 
-### Desktop review — PASS
+### Desktop static review — PASS
 
 - **Composition:** The headline remains the dominant mass; the Blender set sits in the right-hand photo field instead of becoming a centred 3D product demo.
 - **Perspective:** Cup top and side are both readable. Perspective is restrained and does not feel game-like.
@@ -77,11 +78,11 @@ Artifacts reviewed:
 - **Photography relationship:** Interior, coffee, and pancake images remain important and visibly real; Blender behaves as a foreground layer around them.
 - **Geometry:** The custom cup silhouette and curved handle no longer read as an obvious default primitive.
 
-### Mobile review — PASS WITH WATCH ITEM
+### Mobile static review — PASS
 
 - Headline/actions remain readable and conversion-first.
-- One strong real interior image plus the coffee image are preserved; the pancake card is correctly removed.
-- The Blender model begins lower in the first scroll, so the first viewport remains text-led. This is acceptable for the static gate and creates a natural reveal, but the motion pass should bring the ceramic set upward slightly as the user reaches the lower half of the hero rather than leaving the effect too late.
+- One strong real interior image plus the coffee image are preserved; the pancake card is removed at the mobile breakpoint.
+- The Blender set begins in the lower part of the first scroll, keeping the first viewport text-led while still becoming visible before the Hero exits.
 
 ### Fallback review — PASS
 
@@ -89,19 +90,45 @@ Playwright explicitly aborts `models/manic-hero.glb`; the real coffee fallback r
 
 ### Performance review — PASS FOR SLICE 01
 
-- Generated GLB is small enough for the first slice (~636 KB) before compression.
-- Rendering is static/off-cycle after resize during this gate.
+- Generated GLB is ~629 KiB before compression.
 - DPR is capped by breakpoint.
 - Only one shadow-casting key light is used.
+- IntersectionObserver stops the animation loop once the Hero leaves view.
 
-### Static verdict
+### Hero motion review — PASS
 
-**Approved for the Hero motion pass.**
+The motion test explicitly confirms the exported Blender actions `ACT_HERO_CUP_LIFT` and `ACT_HERO_SPOON_SHIFT` are present and that the rendered WebGL frame changes after deterministic scrolling.
 
-### Motion-pass requirements
+Visual review of `hero-scroll-mid-1600x1000.png`:
 
-- Scrub the Blender-authored `ACT_HERO_CUP_LIFT` / spoon action rather than inventing a full-world rotation.
-- Move camera through a shallow dolly/arc only.
-- Keep saucer/plinth visually grounded as the cup lifts.
-- On mobile, bias motion upward enough that the 3D still life becomes visible before the hero fully exits.
-- Reduced motion must remain exactly on the approved static frame.
+- **Blender motion is the object motion source:** Three.js scrubs the Blender animation clips instead of rotating the complete scene.
+- **Camera choreography:** the camera uses a shallow dolly/arc and slight upward look-target change, preserving the product-photography perspective.
+- **Grounding:** the saucer/plinth remains the stable mass while the cup lift is small enough to avoid a floating-object effect.
+- **Lighting:** the key shifts subtly in the same upper-left/front-left family; shadow softness is retained.
+- **Editorial hierarchy:** as the Hero scrolls away, the model becomes more visually prominent for a moment but does not cover the CTA or proof bar.
+- **Reduced motion:** progress remains at the approved static frame and Blender clips are held at time zero.
+
+### Hero verdict
+
+**APPROVED. Slice 01 can remain locked while development moves to the Menu exploded-breakfast slice.**
+
+---
+
+## Menu exploded breakfast — review target
+
+### Purpose
+
+Create V3's second major spatial moment: one evidence-compatible, stylised breakfast composition that begins assembled and can later separate in a shallow spiral while the real menu text remains semantic HTML.
+
+### Static gate before motion
+
+- Plate silhouette must read immediately as breakfast/tableware, not abstract primitives.
+- Egg/toast/avocado/tomato/greens should be recognisable as an editorial food sculpture without claiming exact current plating.
+- A real Manic food photograph must remain visible in the section as the truth/reference layer.
+- The plate must be physically grounded under the same morning-light direction established by Hero.
+- HTML menu rows stay clear, stable, and keyboard accessible.
+- Mobile uses a tighter crop and reduced visual density.
+
+### Current verdict
+
+**Building next — static Blender model first, no scroll explosion until static review passes.**
