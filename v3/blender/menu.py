@@ -47,6 +47,33 @@ def leaf(name, location, scale, rotation, material):
     return obj
 
 
+def animate_rig(rig, offset, rotation, action_name):
+    base_location = rig.location.copy()
+    base_rotation = rig.rotation_euler.copy()
+
+    rig.keyframe_insert(data_path='location', frame=1)
+    rig.keyframe_insert(data_path='rotation_euler', frame=1)
+
+    rig.location.x = base_location.x + offset[0]
+    rig.location.y = base_location.y + offset[1]
+    rig.location.z = base_location.z + offset[2]
+    rig.rotation_euler.x = base_rotation.x + rotation[0]
+    rig.rotation_euler.y = base_rotation.y + rotation[1]
+    rig.rotation_euler.z = base_rotation.z + rotation[2]
+    rig.keyframe_insert(data_path='location', frame=100)
+    rig.keyframe_insert(data_path='rotation_euler', frame=100)
+
+    if rig.animation_data and rig.animation_data.action:
+        rig.animation_data.action.name = action_name
+        for curve in rig.animation_data.action.fcurves:
+            for point in curve.keyframe_points:
+                point.interpolation = 'BEZIER'
+
+    rig['explode_x'] = offset[0]
+    rig['explode_y'] = offset[1]
+    rig['explode_z'] = offset[2]
+
+
 def build():
     clear_scene()
 
@@ -64,7 +91,6 @@ def build():
     charcoal = principled_material('MAT_MENU_PLINTH', (0.12, 0.105, 0.095), roughness=0.91)
     feta = principled_material('MAT_FETA', (0.93, 0.90, 0.81), roughness=0.78)
 
-    # A shallow charcoal presentation slab gives the light plate a grounded silhouette in the dark menu section.
     plinth = bevel_cube('MENU_PLINTH', (5.20, 3.75, 0.18), (0.0, 0.0, -0.20), charcoal, bevel=0.16, segments=6)
     plinth['role'] = 'menu-ground'
 
@@ -81,13 +107,14 @@ def build():
     rim = lathe('MENU_PLATE_RIM', rim_profile, ceramic_edge, steps=128)
     rim.location.z = 0.19
 
-    # Toast: layered rounded blocks, slightly rotated, with darker crust underneath.
+    toast_root = empty('RIG_TOAST', (0, 0, 0))
     toast_crust = bevel_cube('FOOD_TOAST_CRUST', (1.68, 1.17, 0.18), (-0.32, 0.13, 0.31), toast_edge_mat, bevel=0.18, segments=7)
     toast_crust.rotation_euler[2] = -0.18
+    ensure_parent(toast_crust, toast_root)
     toast = bevel_cube('FOOD_TOAST', (1.52, 1.04, 0.16), (-0.32, 0.13, 0.43), toast_mat, bevel=0.16, segments=7)
     toast.rotation_euler[2] = -0.18
+    ensure_parent(toast, toast_root)
 
-    # Egg uses an irregular white assembled from overlapping flattened lobes plus a lifted yolk.
     egg_root = empty('RIG_EGG', (0.18, -0.10, 0.0))
     for idx, (offset, scale) in enumerate([
         ((0.05, -0.02, 0.56), (0.70, 0.50, 0.065)),
@@ -100,7 +127,6 @@ def build():
     egg_yolk = flattened_sphere('FOOD_EGG_YOLK', (0.16, -0.04, 0.66), (0.31, 0.29, 0.18), yolk, segments=44, rings=22)
     ensure_parent(egg_yolk, egg_root)
 
-    # Avocado fan: overlapping flattened ellipsoids, deliberately stylised rather than claiming exact plating.
     avocado_root = empty('RIG_AVOCADO', (0, 0, 0))
     avocado_positions = [
         (0.78, 0.62, 0.40, -0.34),
@@ -115,21 +141,18 @@ def build():
         slice_obj.rotation_euler[2] = rot
         ensure_parent(slice_obj, avocado_root)
 
-    # Tomato discs sit behind the toast edge as a red counterpoint.
     tomato_root = empty('RIG_TOMATO', (0, 0, 0))
     for idx, (x, y, rot) in enumerate([(0.92, -0.63, -0.20), (1.18, -0.52, 0.12), (0.68, -0.76, -0.05)]):
         disc = cylinder(f'FOOD_TOMATO_{idx+1}', 0.27, 0.07, (x, y, 0.34), tomato, vertices=48)
         disc.rotation_euler[2] = rot
         ensure_parent(disc, tomato_root)
 
-    # Small feta cubes imply the current avocado-smash description without making the entire plate literal.
     feta_root = empty('RIG_FETA', (0, 0, 0))
     for idx, pos in enumerate([(0.55, 0.93, 0.37), (0.30, 0.83, 0.38), (0.70, 0.78, 0.39)]):
         cube = bevel_cube(f'FOOD_FETA_{idx+1}', (0.22, 0.18, 0.13), pos, feta, bevel=0.035, segments=3)
         cube.rotation_euler[2] = 0.17 * (idx - 1)
         ensure_parent(cube, feta_root)
 
-    # Greens: simple leaf silhouettes around one curved stem.
     greens_root = empty('RIG_GREENS', (0, 0, 0))
     stem = tube_curve('FOOD_GREEN_STEM', [(-1.03, -0.63, 0.34), (-1.24, -0.34, 0.39), (-1.30, 0.03, 0.42)], 0.018, green, resolution=4, bevel_resolution=3)
     ensure_parent(stem, greens_root)
@@ -142,7 +165,6 @@ def build():
         lf = leaf(f'FOOD_GREEN_LEAF_{idx+1}', pos, scale, rot, green)
         ensure_parent(lf, greens_root)
 
-    # Fork / knife frame the plate and improve scale cues.
     fork_root = empty('RIG_FORK', (0, 0, 0))
     fork_handle = tube_curve('CUTLERY_FORK_HANDLE', [(-2.10, -0.78, 0.03), (-1.72, -0.90, 0.05), (-1.30, -1.00, 0.06)], 0.035, brass, resolution=5, bevel_resolution=3)
     ensure_parent(fork_handle, fork_root)
@@ -162,19 +184,15 @@ def build():
     knife_blade.rotation_euler[2] = 0.07
     ensure_parent(knife_blade, knife_root)
 
-    # Metadata for the later motion pass; geometry remains fully assembled for the static gate.
-    for rig, target in [
-        (egg_root, (0.12, 0.05, 0.55)),
-        (avocado_root, (0.40, 0.22, 0.35)),
-        (tomato_root, (0.55, -0.16, 0.28)),
-        (feta_root, (-0.10, 0.44, 0.40)),
-        (greens_root, (-0.48, -0.08, 0.30)),
-        (fork_root, (-0.35, -0.28, 0.20)),
-        (knife_root, (0.35, -0.36, 0.16)),
-    ]:
-        rig['explode_x'] = target[0]
-        rig['explode_y'] = target[1]
-        rig['explode_z'] = target[2]
+    # Blender-authored shallow explosion. Plate and slab remain fixed; ingredient groups peel away in a spiral.
+    animate_rig(toast_root, (-0.30, 0.16, 0.46), (0.03, -0.06, -0.10), 'ACT_MENU_EXPLODE_TOAST')
+    animate_rig(egg_root, (0.10, -0.12, 0.78), (0.08, 0.04, 0.10), 'ACT_MENU_EXPLODE_EGG')
+    animate_rig(avocado_root, (0.58, 0.36, 0.36), (-0.04, 0.10, 0.18), 'ACT_MENU_EXPLODE_AVOCADO')
+    animate_rig(tomato_root, (0.66, -0.32, 0.24), (0.06, -0.03, -0.15), 'ACT_MENU_EXPLODE_TOMATO')
+    animate_rig(feta_root, (-0.08, 0.66, 0.44), (-0.05, 0.03, 0.12), 'ACT_MENU_EXPLODE_FETA')
+    animate_rig(greens_root, (-0.74, 0.02, 0.31), (0.05, -0.09, -0.18), 'ACT_MENU_EXPLODE_GREENS')
+    animate_rig(fork_root, (-0.34, -0.34, 0.15), (0.02, 0.02, -0.06), 'ACT_MENU_EXPLODE_FORK')
+    animate_rig(knife_root, (0.36, -0.40, 0.14), (-0.02, -0.01, 0.06), 'ACT_MENU_EXPLODE_KNIFE')
 
     bpy.context.scene.frame_start = 1
     bpy.context.scene.frame_end = 100
