@@ -29,6 +29,18 @@ async function frameGalleryStage(page) {
   await page.waitForTimeout(450);
 }
 
+async function frameGalleryEntering(page) {
+  await page.evaluate(() => {
+    const section = document.getElementById('gallery');
+    if (!section) return;
+    window.scrollTo({
+      top: Math.max(0, section.offsetTop - window.innerHeight * 0.78),
+      behavior: 'instant',
+    });
+  });
+  await page.waitForTimeout(800);
+}
+
 test('Gallery photo table static desktop 1600x1000', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/', { waitUntil: 'networkidle' });
@@ -77,18 +89,26 @@ test('Gallery camera and real photo cards respond to scroll when motion is allow
   await waitForGallery(page);
   expect(await page.evaluate(() => document.documentElement.dataset.v3GalleryModel)).toBe('ready');
 
-  await frameGalleryStage(page);
+  await frameGalleryEntering(page);
   const stage = page.locator('[data-gallery-stage]');
   const wide = page.locator('.gallery-photo-wide');
   const beforeProgress = Number(await stage.getAttribute('data-gallery-progress') || 0);
   const beforeTransform = await wide.evaluate((el) => getComputedStyle(el).transform);
+  expect(beforeProgress).toBeLessThan(0.30);
 
-  await page.evaluate(() => window.scrollBy({ top: 620, behavior: 'instant' }));
-  await page.waitForTimeout(1000);
+  await page.evaluate(() => {
+    const section = document.getElementById('gallery');
+    if (!section) return;
+    window.scrollTo({
+      top: Math.max(0, section.offsetTop - window.innerHeight * 0.10),
+      behavior: 'instant',
+    });
+  });
+  await page.waitForTimeout(1200);
 
   const afterProgress = Number(await stage.getAttribute('data-gallery-progress') || 0);
   const afterTransform = await wide.evaluate((el) => getComputedStyle(el).transform);
-  expect(afterProgress).toBeGreaterThan(beforeProgress + 0.02);
+  expect(afterProgress).toBeGreaterThan(beforeProgress + 0.08);
   expect(afterTransform).not.toBe(beforeTransform);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
