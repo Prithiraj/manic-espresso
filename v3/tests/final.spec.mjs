@@ -17,6 +17,17 @@ async function frameFinal(page) {
   await page.waitForTimeout(450);
 }
 
+function visibleBox(box, viewportWidth = 1600, viewportHeight = 1000) {
+  const x = Math.max(0, box.x);
+  const y = Math.max(0, box.y);
+  return {
+    x,
+    y,
+    width: Math.max(1, Math.min(box.width - Math.max(0, -box.x), viewportWidth - x)),
+    height: Math.max(1, Math.min(box.height - Math.max(0, -box.y), viewportHeight - y)),
+  };
+}
+
 test('Final ceramic callback static desktop 1600x1000', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/', { waitUntil: 'networkidle' });
@@ -66,7 +77,10 @@ test('Final callback scrubs Blender settle clips as the section enters', async (
   const canvas = page.locator('#final-canvas');
   const beforeBox = await canvas.boundingBox();
   expect(beforeBox).not.toBeNull();
-  const before = await page.screenshot({ clip: beforeBox });
+  const beforeClip = visibleBox(beforeBox);
+  expect(beforeClip.width).toBeGreaterThan(100);
+  expect(beforeClip.height).toBeGreaterThan(60);
+  const before = await page.screenshot({ clip: beforeClip });
   const beforeShift = await page.locator('[data-final-stage]').evaluate((el) => getComputedStyle(el).getPropertyValue('--final-photo-shift'));
 
   await page.evaluate((top) => window.scrollTo({ top: top - window.innerHeight * 0.20, behavior: 'instant' }), sectionTop);
@@ -74,7 +88,10 @@ test('Final callback scrubs Blender settle clips as the section enters', async (
 
   const afterBox = await canvas.boundingBox();
   expect(afterBox).not.toBeNull();
-  const after = await page.screenshot({ clip: afterBox });
+  const afterClip = visibleBox(afterBox);
+  expect(afterClip.width).toBeGreaterThan(100);
+  expect(afterClip.height).toBeGreaterThan(100);
+  const after = await page.screenshot({ clip: afterClip });
   const length = Math.min(before.length, after.length);
   expect(Buffer.compare(before.subarray(0, length), after.subarray(0, length))).not.toBe(0);
 
