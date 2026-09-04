@@ -201,7 +201,9 @@ export function initGalleryScene(canvas, host) {
     const viewport = window.innerHeight || 800;
     const start = viewport * 0.88;
     const end = viewport * 0.12;
-    targetProgress = clamp((start - rect.top) / Math.max(1, rect.height + start - end), 0, 1);
+    // Complete the gallery choreography while the section enters the viewport.
+    // Tying it to the full section height made the motion nearly imperceptible on tall layouts.
+    targetProgress = clamp((start - rect.top) / Math.max(1, start - end), 0, 1);
     startLoop();
   };
 
