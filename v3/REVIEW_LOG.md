@@ -9,7 +9,7 @@ V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enou
 | Hero ceramic | Pass | Pass | Pass | Pass | Pass | **Approved** |
 | Menu exploded breakfast | Pass | Pass | Pass | Pass | Pass | **Approved** |
 | Café miniature cutaway | Pass | Pass | Pass | Pass | Pass | **Approved** |
-| Why Manic still lifes | Planned | — | — | — | — | **Next slice** |
+| Why Manic still lifes | Pass | Pass | Pass | Pending | Pass | **Static gate passed** |
 | Final ceramic callback | Not started | — | — | — | — | Planned |
 | Visit location token | Not started | — | — | — | — | Planned |
 | Gallery photo table | Not started | — | — | — | — | Planned |
@@ -125,3 +125,49 @@ This is deliberately a stylised/dollhouse interpretation based on visible Manic 
 - Real-photo fallback is covered by automated QA.
 
 **Verdict: LOCKED. Proceed to Slice 04 — Why Manic still lifes.**
+
+---
+
+# Slice 04 — Why Manic still lifes
+
+## Static artifacts reviewed
+
+- `why-static-desktop-1600x1000.png`
+- `why-static-mobile-390x844.png`
+- generated `manic-why.glb` (~1.2 MiB before final compression)
+
+## Desktop static review — PASS
+
+- **Generous plates:** the plate/toast/egg/avocado/tomato arrangement reads immediately as an editorial breakfast still life without presenting itself as an exact Manic menu photograph.
+- **A warm welcome:** table, cup, vase and pulled-out chair form a clear hospitality silhouette; the chair successfully suggests a place being made for someone without modelling people.
+- **A quiet local find:** cream/charcoal façade fragment, dark sign, opening and planter read as a miniature street-facing café cue and visually connect to the larger Café cutaway slice.
+- All three scenes share the same warm upper-left morning-light direction and subdued tactile palette.
+- The scissored single-canvas renderer keeps each Blender group spatially aligned with its HTML card while avoiding three WebGL contexts.
+- HTML copy remains visually dominant and fully readable.
+
+## Mobile static review — PASS
+
+- The same single canvas renders each still life into the stacked card viewport rather than shrinking the desktop row.
+- Plate and welcome scenes remain legible at 390px; text does not collide with the 3D objects.
+- Mobile screenshot confirms no horizontal overflow.
+
+## Fallback / performance — PASS FOR STATIC SLICE 04
+
+- One shared GLB and one renderer are used for all three still lifes.
+- The model is ~1.2 MiB before final compression, within the provisional target for the combined three-scene asset.
+- Rendering is event-driven (load/intersection/resize), with no idle animation loop in the static phase.
+- Automated fallback QA confirms the original evidence-backed HTML cards remain visible if the GLB fails.
+
+## Static verdict
+
+**APPROVED for motion pass.**
+
+## Motion requirements
+
+1. Plate ingredients may start lightly separated and settle into the approved static composition; reduced motion must show the assembled static frame.
+2. Welcome chair may move outward only a small amount and cup may bias toward camera; no character-like behavior.
+3. Quiet-local-find motion should reveal depth through a small doorway/façade shift, not a theatrical swinging door.
+4. The cards remain text-first; motion must not continuously run after the section settles.
+5. Use Blender-authored clips and Three.js scroll scrubbing rather than recreating the object motion with ad hoc JS transforms.
+
+**Current verdict: STATIC GATE PASSED — BUILDING WHY MANIC MOTION.**
