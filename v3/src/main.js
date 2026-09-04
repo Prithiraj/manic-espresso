@@ -1,7 +1,9 @@
 import './styles.css';
 import './menu-slice.css';
+import './cafe-slice.css';
 import { initHeroScene } from './hero-scene.js';
 import { initMenuScene } from './menu-scene.js';
+import { initCafeScene } from './cafe-scene.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -31,6 +33,40 @@ function initMenu() {
   }
 }
 
+function initCafe() {
+  const host = document.querySelector('.place-photos');
+  if (!host) {
+    document.documentElement.dataset.v3CafeModel = 'fallback';
+    return;
+  }
+
+  host.classList.add('cafe-stage');
+  host.dataset.cafeStage = '';
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'cafe-canvas';
+  canvas.className = 'cafe-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  host.append(canvas);
+
+  const label = document.createElement('div');
+  label.className = 'cafe-label';
+  label.setAttribute('aria-hidden', 'true');
+  label.innerHTML = '<span>BLENDER</span><span>SLICE 03</span>';
+  host.append(label);
+
+  const fallback = document.createElement('p');
+  fallback.className = 'cafe-fallback-note';
+  fallback.textContent = '3D miniature unavailable — real Manic exterior and interior photography remains visible.';
+  host.append(fallback);
+
+  const dispose = initCafeScene(canvas, host);
+  if (!dispose && !document.documentElement.dataset.v3CafeModel) {
+    host.classList.add('cafe-model-failed');
+    document.documentElement.dataset.v3CafeModel = 'fallback';
+  }
+}
+
 async function markReady() {
   const heroImages = [...document.querySelectorAll('.hero img')];
   await Promise.all(heroImages.map((image) => {
@@ -53,4 +89,5 @@ async function markReady() {
 initHeader();
 initHero();
 initMenu();
+initCafe();
 markReady();
