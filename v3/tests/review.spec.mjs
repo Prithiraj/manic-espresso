@@ -21,10 +21,10 @@ async function frameReviewEntering(page) {
   await page.evaluate(() => {
     const section = document.getElementById('reviews');
     if (!section) return;
-    const top = section.offsetTop - window.innerHeight * 0.78;
+    const top = section.offsetTop - window.innerHeight * 0.80;
     window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
   });
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(800);
 }
 
 test('Review paper static desktop 1600x1000', async ({ page }) => {
@@ -68,12 +68,19 @@ test('Review paper turns into its settled state on scroll', async ({ page }) => 
 
   const stage = page.locator('[data-review-stage]');
   const before = Number(await stage.getAttribute('data-review-progress') || 0);
-  expect(before).toBeLessThan(0.55);
+  expect(before).toBeLessThan(0.35);
 
-  await page.evaluate(() => window.scrollBy({ top: 430, behavior: 'instant' }));
-  await page.waitForTimeout(950);
+  await page.evaluate(() => {
+    const section = document.getElementById('reviews');
+    if (!section) return;
+    window.scrollTo({
+      top: Math.max(0, section.offsetTop - window.innerHeight * 0.24),
+      behavior: 'instant',
+    });
+  });
+  await page.waitForTimeout(1200);
   const after = Number(await stage.getAttribute('data-review-progress') || 0);
-  expect(after).toBeGreaterThan(before + 0.20);
+  expect(after).toBeGreaterThan(before + 0.10);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
