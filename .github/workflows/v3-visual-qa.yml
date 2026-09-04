@@ -40,11 +40,13 @@ jobs:
           blender --background --python v3/blender/menu.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-menu.glb"
           blender --background --python v3/blender/cafe.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe-base.glb"
           blender --background --python v3/blender/cafe_motion.py -- --input "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe-base.glb" --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe.glb"
+          blender --background --python v3/blender/why.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-why.glb"
           rm -f site/assets/images/models/manic-cafe-base.glb
           test -s site/assets/images/models/manic-hero.glb
           test -s site/assets/images/models/manic-menu.glb
           test -s site/assets/images/models/manic-cafe.glb
-          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb site/assets/images/models/manic-cafe.glb
+          test -s site/assets/images/models/manic-why.glb
+          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb site/assets/images/models/manic-cafe.glb site/assets/images/models/manic-why.glb
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -77,5 +79,6 @@ jobs:
             site/assets/images/models/manic-hero.glb
             site/assets/images/models/manic-menu.glb
             site/assets/images/models/manic-cafe.glb
+            site/assets/images/models/manic-why.glb
           if-no-files-found: warn
           retention-days: 14
