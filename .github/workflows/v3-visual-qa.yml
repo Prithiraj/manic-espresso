@@ -8,10 +8,6 @@ on:
     paths:
       - 'v3/**'
       - '.github/workflows/v3-visual-qa.yml'
-  pull_request:
-    paths:
-      - 'v3/**'
-      - '.github/workflows/v3-visual-qa.yml'
 
 permissions:
   contents: read
@@ -20,7 +16,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
-  group: v3-slice-${{ github.head_ref || github.ref_name }}
+  group: v3-slice-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
