@@ -1,5 +1,7 @@
 import './styles.css';
+import './menu-slice.css';
 import { initHeroScene } from './hero-scene.js';
+import { initMenuScene } from './menu-scene.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,6 +19,15 @@ function initHero() {
   const dispose = initHeroScene(canvas, host);
   if (!dispose && !document.documentElement.dataset.v3Model) {
     document.documentElement.dataset.v3Model = 'fallback';
+  }
+}
+
+function initMenu() {
+  const canvas = document.getElementById('menu-canvas');
+  const host = document.querySelector('[data-menu-stage]');
+  const dispose = initMenuScene(canvas, host);
+  if (!dispose && !document.documentElement.dataset.v3MenuModel) {
+    document.documentElement.dataset.v3MenuModel = 'fallback';
   }
 }
 
@@ -41,4 +52,5 @@ async function markReady() {
 
 initHeader();
 initHero();
+initMenu();
 markReady();
