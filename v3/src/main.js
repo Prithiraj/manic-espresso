@@ -2,10 +2,12 @@ import './styles.css';
 import './why-slice.css';
 import './menu-slice.css';
 import './cafe-slice.css';
+import './final-slice.css';
 import { initHeroScene } from './hero-scene.js';
 import { initWhyScene } from './why-scene.js';
 import { initMenuScene } from './menu-scene.js';
 import { initCafeScene } from './cafe-scene.js';
+import { initFinalScene } from './final-scene.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -105,6 +107,16 @@ function initCafe() {
   }
 }
 
+function initFinal() {
+  const canvas = document.getElementById('final-canvas');
+  const host = document.querySelector('[data-final-stage]');
+  const dispose = initFinalScene(canvas, host);
+  if (!dispose && !document.documentElement.dataset.v3FinalModel) {
+    host?.classList.add('final-model-failed');
+    document.documentElement.dataset.v3FinalModel = 'fallback';
+  }
+}
+
 async function markReady() {
   const heroImages = [...document.querySelectorAll('.hero img')];
   await Promise.all(heroImages.map((image) => {
@@ -129,4 +141,5 @@ initHero();
 initWhy();
 initMenu();
 initCafe();
+initFinal();
 markReady();
