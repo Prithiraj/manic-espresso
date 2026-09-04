@@ -1,37 +1,39 @@
-name: Deploy static site to GitHub Pages
+name: V3 Blender slice QA
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch:
+    branches:
+      - feature/v3-blender-slices
+    paths:
+      - 'v3/**'
+      - '.github/workflows/v3-visual-qa.yml'
+  pull_request:
+    paths:
+      - 'v3/**'
+      - '.github/workflows/v3-visual-qa.yml'
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
-  build:
+  slice-visual-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Blender for V3
+      - name: Install Blender
         run: |
           sudo apt-get update
           sudo apt-get install -y blender python3-numpy
           blender --version | head -n 2
+          python3 -c "import numpy; print('numpy', numpy.__version__)"
 
-      - name: Generate current V3 Blender models
+      - name: Generate Blender GLBs
         run: |
           mkdir -p site/assets/images/models
           blender --background --python v3/blender/hero.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-hero.glb"
@@ -45,46 +47,39 @@ jobs:
           test -s site/assets/images/models/manic-menu.glb
           test -s site/assets/images/models/manic-cafe.glb
           test -s site/assets/images/models/manic-why.glb
+          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb site/assets/images/models/manic-cafe.glb site/assets/images/models/manic-why.glb
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: '24'
 
-      - name: Build Three.js V2
-        working-directory: v2
-        run: |
-          npm install --no-audit --no-fund
-          npm run build
-
-      - name: Build Blender + Three.js V3 preview
+      - name: Install V3 dependencies
         working-directory: v3
-        run: |
-          npm install --no-audit --no-fund
-          npm run build
+        run: npm install --no-audit --no-fund
 
-      - name: Assemble Pages artifact
-        run: |
-          rm -rf site/v2 site/v3
-          mkdir -p site/v2 site/v3
-          cp -R v2/dist/. site/v2/
-          cp -R v3/dist/. site/v3/
+      - name: Build V3 production bundle
+        working-directory: v3
+        run: npm run build
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v6
+      - name: Install Chromium
+        working-directory: v3
+        run: npx playwright install --with-deps chromium
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
+      - name: Render slice visual QA
+        working-directory: v3
+        run: npm run test:visual
+
+      - name: Upload V3 review artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          path: ./site
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+          name: manic-v3-slice-qa
+          path: |
+            v3/qa-screenshots/
+            site/assets/images/models/manic-hero.glb
+            site/assets/images/models/manic-menu.glb
+            site/assets/images/models/manic-cafe.glb
+            site/assets/images/models/manic-why.glb
+          if-no-files-found: warn
+          retention-days: 14
