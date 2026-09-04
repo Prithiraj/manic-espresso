@@ -24,6 +24,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: v2/package-lock.json
+
+      - name: Build Three.js V2
+        working-directory: v2
+        run: |
+          npm ci
+          npm run build
+
+      - name: Assemble Pages artifact
+        run: |
+          rm -rf site/v2
+          mkdir -p site/v2
+          cp -R v2/dist/. site/v2/
+
       - name: Configure Pages
         uses: actions/configure-pages@v6
 
