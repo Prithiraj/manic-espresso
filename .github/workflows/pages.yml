@@ -20,9 +20,31 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Blender for V3
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender python3-numpy
+          blender --version | head -n 2
+
+      - name: Generate current V3 Blender models
+        run: |
+          mkdir -p site/assets/images/models
+          blender --background --python v3/blender/hero.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-hero.glb"
+          blender --background --python v3/blender/menu.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-menu.glb"
+          blender --background --python v3/blender/cafe.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe-base.glb"
+          blender --background --python v3/blender/cafe_motion.py -- --input "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe-base.glb" --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe.glb"
+          blender --background --python v3/blender/why.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-why-base.glb"
+          blender --background --python v3/blender/why_motion.py -- --input "$GITHUB_WORKSPACE/site/assets/images/models/manic-why-base.glb" --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-why.glb"
+          rm -f site/assets/images/models/manic-cafe-base.glb site/assets/images/models/manic-why-base.glb
+          test -s site/assets/images/models/manic-hero.glb
+          test -s site/assets/images/models/manic-menu.glb
+          test -s site/assets/images/models/manic-cafe.glb
+          test -s site/assets/images/models/manic-why.glb
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -35,11 +57,18 @@ jobs:
           npm install --no-audit --no-fund
           npm run build
 
+      - name: Build Blender + Three.js V3 preview
+        working-directory: v3
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
       - name: Assemble Pages artifact
         run: |
-          rm -rf site/v2
-          mkdir -p site/v2
+          rm -rf site/v2 site/v3
+          mkdir -p site/v2 site/v3
           cp -R v2/dist/. site/v2/
+          cp -R v3/dist/. site/v3/
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
