@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Manic Espresso V3 — Blender Spatial Study | Como WA</title>
-  <meta name="description" content="A Blender and Three.js spatial concept for Manic Espresso in Como, WA, combining real café photography with a crafted ceramic hero scene." />
+  <meta name="description" content="A Blender and Three.js spatial concept for Manic Espresso in Como, WA, combining real café photography with crafted ceramic and breakfast scenes." />
   <meta name="theme-color" content="#f3eee4" />
 </head>
 <body>
@@ -72,7 +72,7 @@
 
     <section class="section why" id="why" aria-labelledby="why-title">
       <div>
-        <p class="eyebrow">Next slice · Why Manic</p>
+        <p class="eyebrow">Future slice · Why Manic</p>
         <h2 id="why-title">Good food. Fair value. No fuss.</h2>
       </div>
       <div class="why-grid">
@@ -83,15 +83,31 @@
     </section>
 
     <section class="menu" id="menu" aria-labelledby="menu-title">
-      <div>
-        <p class="eyebrow">Future Blender slice · exploded breakfast</p>
-        <h2 id="menu-title">Breakfast that earns the detour.</h2>
+      <div class="menu-left">
+        <div class="menu-heading">
+          <p class="eyebrow">Blender slice 02 · assembled breakfast</p>
+          <h2 id="menu-title">Breakfast that earns the detour.</h2>
+          <p class="menu-note">This first Menu gate keeps the Blender plate assembled. The real Manic food photograph stays visible as the reference layer; the exploded scroll choreography comes only after this still frame passes review.</p>
+        </div>
+
+        <div class="menu-stage" data-menu-stage>
+          <div class="menu-stage-field" aria-hidden="true"></div>
+          <figure class="menu-real-photo">
+            <img src="./visit-05.jpg" alt="A bacon and egg breakfast roll photographed at Manic Espresso." width="1536" height="2048" loading="lazy" decoding="async" />
+            <figcaption>Real Manic food</figcaption>
+          </figure>
+          <img class="menu-model-fallback" src="./visit-06.jpg" alt="" aria-hidden="true" width="1536" height="2048" loading="lazy" decoding="async" />
+          <canvas id="menu-canvas" class="menu-canvas" aria-hidden="true"></canvas>
+          <div class="menu-stage-label" aria-hidden="true"><span>BLENDER</span><span>SLICE 02</span></div>
+        </div>
       </div>
-      <div class="menu-list">
-        <article><span>01</span><div><h3>Omelette</h3><p>Two eggs, ciabatta and tomato salsa.</p></div></article>
-        <article><span>02</span><div><h3>Avocado Smash</h3><p>Poached eggs, feta, fruit and ciabatta.</p></div></article>
-        <article><span>03</span><div><h3>Benedict</h3><p>Bacon, hash browns, poached eggs, tomato-spinach salsa, hollandaise and ciabatta.</p></div></article>
-        <article><span>04</span><div><h3>Açaí Bowl</h3><p>Toasted muesli, fruit and honey.</p></div></article>
+
+      <div class="menu-list" role="list" aria-label="Current menu highlights">
+        <article role="listitem"><span>01</span><div><h3>Omelette</h3><p>Two eggs, ciabatta and tomato salsa.</p></div></article>
+        <article role="listitem"><span>02</span><div><h3>Avocado Smash</h3><p>Poached eggs, feta, fruit and ciabatta.</p></div></article>
+        <article role="listitem"><span>03</span><div><h3>Benedict</h3><p>Bacon, hash browns, poached eggs, tomato-spinach salsa, hollandaise and ciabatta.</p></div></article>
+        <article role="listitem"><span>04</span><div><h3>Açaí Bowl</h3><p>Toasted muesli, fruit and honey.</p></div></article>
+        <p class="menu-source-note">The 3D plate is a stylised editorial composition, not a claim about exact current plating. Menu text remains evidence-backed HTML.</p>
       </div>
     </section>
 
