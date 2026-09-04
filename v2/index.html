@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manic Espresso — Three.js V2 | Como WA</title>
+  <meta name="description" content="A spatial editorial concept for Manic Espresso in Como, WA — real café photography, breakfast, coffee, opening hours, directions and a restrained Three.js ceramic scene." />
+  <meta name="theme-color" content="#f3eee4" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Manic Espresso — Como WA" />
+  <meta property="og:description" content="Coffee, generous breakfasts and an easygoing Como welcome at 27 Murray St." />
+  <meta property="og:image" content="https://prithiraj.github.io/manic-espresso/v2/visit-05.jpg" />
+  <meta property="og:image:alt" content="A breakfast roll photographed at Manic Espresso in Como." />
+  <meta property="og:url" content="https://prithiraj.github.io/manic-espresso/v2/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CafeOrCoffeeShop",
+    "name": "Manic Espresso",
+    "url": "https://prithiraj.github.io/manic-espresso/v2/",
+    "telephone": "+61401866609",
+    "image": "https://prithiraj.github.io/manic-espresso/v2/visit-05.jpg",
+    "priceRange": "A$1–20",
+    "servesCuisine": ["Cafe", "Breakfast", "Brunch"],
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "27 Murray St",
+      "addressLocality": "Como",
+      "addressRegion": "WA",
+      "postalCode": "6152",
+      "addressCountry": "AU"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -31.9922689,
+      "longitude": 115.8746555
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "07:00",
+        "closes": "14:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Sunday",
+        "opens": "08:00",
+        "closes": "14:00"
+      }
+    ],
+    "sameAs": [
+      "https://www.instagram.com/manicespresso/",
+      "https://www.facebook.com/216035731919391/"
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="#top" aria-label="Manic Espresso home">
+      <span class="brand-script">manic</span>
+      <span class="brand-sub">espresso · como</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+      <span class="sr-only">Toggle navigation</span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Primary" data-nav>
+      <a href="#menu">Menu</a>
+      <a href="#place">Our place</a>
+      <a href="#visit">Visit</a>
+      <a class="button button-dark button-small" href="https://www.google.com/maps/search/?api=1&query=Manic+Espresso+27+Murray+St+Como+WA+6152" target="_blank" rel="noopener">Get directions</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Breakfast · brunch · coffee · Como</p>
+        <h1 id="hero-title">A little neighbourhood café, with a little more depth.</h1>
+        <p class="hero-lede">Real Manic Espresso photography stays centre stage. A quiet ceramic scene adds spatial depth around the same easygoing Murray Street story.</p>
+
+        <div class="hero-actions">
+          <a class="button button-dark" href="#menu">View menu</a>
+          <a class="text-link" href="https://www.google.com/maps/search/?api=1&query=Manic+Espresso+27+Murray+St+Como+WA+6152" target="_blank" rel="noopener">Get directions <span aria-hidden="true">↗</span></a>
+        </div>
+
+        <div class="hero-facts" aria-label="Opening hours and address">
+          <span id="open-status">Open 7 days</span>
+          <span>27 Murray St, Como</span>
+          <span>Mon–Sat 7–2 · Sun 8–2</span>
+        </div>
+      </div>
+
+      <div class="hero-art" data-hero-art>
+        <div class="art-field" aria-hidden="true"></div>
+        <div class="scene-fallback" aria-hidden="true">
+          <div class="fallback-saucer"></div>
+          <div class="fallback-cup"><span></span></div>
+        </div>
+        <canvas id="scene-canvas" class="scene-canvas" aria-hidden="true"></canvas>
+
+        <figure class="photo-card photo-card-main">
+          <img src="./interior.jpg" alt="Interior of Manic Espresso with chalkboard-style wall art and floral details." width="2016" height="1089" fetchpriority="high" decoding="async" />
+          <figcaption>Manic, Como</figcaption>
+        </figure>
+
+        <figure class="photo-card photo-card-coffee">
+          <img src="./visit-04.jpg" alt="Coffee served at Manic Espresso." width="1536" height="2048" decoding="async" />
+        </figure>
+
+        <figure class="photo-card photo-card-food">
+          <img src="./visit-06.jpg" alt="Pancakes photographed at Manic Espresso." width="1536" height="2048" decoding="async" />
+        </figure>
+
+        <div class="hero-seal" aria-hidden="true">
+          <span>COMO</span>
+          <span>WA 6152</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="proof-bar" aria-label="Business proof">
+      <div><strong>4.6</strong><span>Google rating</span></div>
+      <div><strong>254</strong><span>Google reviews</span></div>
+      <div><strong>7 days</strong><span>Breakfast & brunch</span></div>
+      <p>Business listing checked September 2026.</p>
+    </section>
+
+    <section class="section statement-section" aria-labelledby="statement-title">
+      <div class="statement-intro reveal">
+        <p class="eyebrow">Why Manic</p>
+        <h2 id="statement-title">Good food. Fair value. No fuss.</h2>
+      </div>
+      <div class="statement-grid">
+        <article class="statement-card reveal">
+          <span>01</span>
+          <h3>Generous plates</h3>
+          <p>Recent customers repeatedly describe the breakfasts as filling, fresh and well priced.</p>
+        </article>
+        <article class="statement-card reveal">
+          <span>02</span>
+          <h3>A warm welcome</h3>
+          <p>Friendly, accommodating service is one of the most consistent themes across recent reviews.</p>
+        </article>
+        <article class="statement-card reveal">
+          <span>03</span>
+          <h3>A quiet local find</h3>
+          <p>Reviewers often call out the calm, cosy atmosphere — an easy place to settle in for brunch.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="menu-section" id="menu" aria-labelledby="menu-title">
+      <div class="menu-heading reveal">
+        <p class="eyebrow">Current ordering menu</p>
+        <h2 id="menu-title">Breakfast that earns the detour.</h2>
+        <p>Menu availability changes. These items are drawn from the current online ordering menu; the live order page remains the source of truth.</p>
+        <div class="menu-actions">
+          <a class="button button-light" href="https://www.ubereats.com/au/store/manic-espresso/MaE8B4_RVgekCkw7YoG1jg" target="_blank" rel="noopener">Order online</a>
+          <a class="text-link text-link-light" href="tel:+61401866609">Call 0401 866 609</a>
+        </div>
+      </div>
+
+      <div class="menu-list reveal" role="list">
+        <article class="menu-row" role="listitem"><span>01</span><div><h3>Omelette</h3><p>Two eggs, ciabatta and tomato salsa.</p></div></article>
+        <article class="menu-row" role="listitem"><span>02</span><div><h3>Avocado Smash</h3><p>Poached eggs, feta, fruit and ciabatta.</p></div></article>
+        <article class="menu-row" role="listitem"><span>03</span><div><h3>Benedict</h3><p>Bacon, hash browns, poached eggs, tomato-spinach salsa, hollandaise and ciabatta.</p></div></article>
+        <article class="menu-row" role="listitem"><span>04</span><div><h3>Açaí Bowl</h3><p>Toasted muesli, fruit and honey.</p></div></article>
+      </div>
+    </section>
+
+    <section class="place-section" id="place" aria-labelledby="place-title">
+      <div class="place-copy reveal">
+        <p class="eyebrow">A Como local</p>
+        <h2 id="place-title">The real place still matters most.</h2>
+        <p>The WebGL layer is deliberately restrained. The café itself — its coffee, artwork, plates and relaxed local character — remains the reason to visit.</p>
+        <a class="text-link" href="https://www.google.com/maps/search/?api=1&query=Manic+Espresso+27+Murray+St+Como+WA+6152" target="_blank" rel="noopener">Find Manic in Como <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="place-collage reveal">
+        <figure class="place-large"><img src="./visit-01.jpg" alt="Exterior of Manic Espresso in Como." width="1536" height="2048" loading="lazy" decoding="async" /></figure>
+        <figure class="place-small"><img src="./visit-03.jpg" alt="Counter and seating inside Manic Espresso." width="1536" height="2048" loading="lazy" decoding="async" /></figure>
+        <p class="place-note">27 Murray St<br />Como WA 6152</p>
+      </div>
+    </section>
+
+    <section class="review-band" aria-labelledby="review-title">
+      <p class="eyebrow">What customers notice</p>
+      <h2 id="review-title">Friendly. Generous. Peaceful.</h2>
+      <p>Those are recurring themes across recent customer feedback — alongside praise for coffee, brunch and value.</p>
+      <a class="text-link text-link-light" href="https://www.google.com/maps/search/?api=1&query=Manic+Espresso+Como+WA" target="_blank" rel="noopener">See current Google reviews <span aria-hidden="true">↗</span></a>
+    </section>
+
+    <section class="gallery-section" aria-labelledby="gallery-title">
+      <div class="gallery-heading reveal">
+        <p class="eyebrow">Real imagery</p>
+        <h2 id="gallery-title">Coffee, breakfast, and the room around it.</h2>
+      </div>
+      <div class="gallery-grid">
+        <figure class="gallery-wide reveal"><img src="./interior.jpg" alt="Wide interior view of Manic Espresso." width="2016" height="1089" loading="lazy" decoding="async" /></figure>
+        <figure class="gallery-tall reveal"><img src="./visit-04.jpg" alt="Coffee served at Manic Espresso." width="1536" height="2048" loading="lazy" decoding="async" /></figure>
+        <figure class="gallery-food reveal"><img src="./visit-05.jpg" alt="Bacon and egg breakfast roll photographed at Manic Espresso." width="1536" height="2048" loading="lazy" decoding="async" /></figure>
+      </div>
+      <p class="rights-note">Demo imagery is real Manic Espresso photography cached locally for prototype reliability. Historical/editorial photos must be licensed or replaced with owner-supplied originals before commercial launch.</p>
+    </section>
+
+    <section class="visit-section" id="visit" aria-labelledby="visit-title">
+      <div class="visit-copy reveal">
+        <p class="eyebrow">Visit Manic</p>
+        <h2 id="visit-title">Breakfast plans? Sorted.</h2>
+        <address>
+          <strong>Manic Espresso</strong>
+          <span>27 Murray St</span>
+          <span>Como WA 6152</span>
+        </address>
+        <a class="phone" href="tel:+61401866609">0401 866 609</a>
+      </div>
+
+      <div class="hours-card reveal" aria-label="Opening hours">
+        <div><span>Monday</span><strong>7am–2pm</strong></div>
+        <div><span>Tuesday</span><strong>7am–2pm</strong></div>
+        <div><span>Wednesday</span><strong>7am–2pm</strong></div>
+        <div><span>Thursday</span><strong>7am–2pm</strong></div>
+        <div><span>Friday</span><strong>7am–2pm</strong></div>
+        <div><span>Saturday</span><strong>7am–2pm</strong></div>
+        <div><span>Sunday</span><strong>8am–2pm</strong></div>
+        <div class="visit-actions">
+          <a class="button button-dark" href="https://www.google.com/maps/search/?api=1&query=Manic+Espresso+27+Murray+St+Como+WA+6152" target="_blank" rel="noopener">Get directions</a>
+          <a class="button button-outline" href="tel:+61401866609">Call Manic</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta" aria-labelledby="final-title">
+      <p class="eyebrow">27 Murray St · Como</p>
+      <h2 id="final-title">Found your next breakfast spot?</h2>
+      <div>
+        <a class="button button-light" href="#menu">See the menu</a>
+        <a class="text-link text-link-light" href="https://www.google.com/maps/search/?api=1&query=Manic+Espresso+27+Murray+St+Como+WA+6152" target="_blank" rel="noopener">Find us in Como <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="#top" aria-label="Back to top">
+      <span class="brand-script">manic</span>
+      <span class="brand-sub">espresso · como</span>
+    </a>
+    <div>
+      <p>27 Murray St, Como WA 6152</p>
+      <p><a href="tel:+61401866609">0401 866 609</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="https://www.ubereats.com/au/store/manic-espresso/MaE8B4_RVgekCkw7YoG1jg" target="_blank" rel="noopener">Uber Eats</a>
+      <a href="https://www.instagram.com/manicespresso/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.facebook.com/216035731919391/" target="_blank" rel="noopener">Facebook</a>
+    </div>
+    <p class="footer-fine">Three.js V2 concept · demo photography rights tracked in the repository.</p>
+  </footer>
+
+  <nav class="mobile-actions" aria-label="Quick actions">
+    <a href="#menu">Menu</a>
+    <a href="https://www.google.com/maps/search/?api=1&query=Manic+Espresso+27+Murray+St+Como+WA+6152" target="_blank" rel="noopener">Directions</a>
+  </nav>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
