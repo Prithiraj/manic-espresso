@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const smoothstep = (value) => value * value * (3 - 2 * value);
+
 function frameForWidth(width) {
   if (width < 520) {
     return {
@@ -11,6 +14,8 @@ function frameForWidth(width) {
       modelScale: 0.86,
       dpr: 1.2,
       shadowSize: 1024,
+      cameraOut: new THREE.Vector3(0.18, 0.12, 0.34),
+      lookShift: new THREE.Vector3(0.10, 0.02, 0.05),
     };
   }
   if (width < 900) {
@@ -22,6 +27,8 @@ function frameForWidth(width) {
       modelScale: 0.91,
       dpr: 1.35,
       shadowSize: 1536,
+      cameraOut: new THREE.Vector3(0.20, 0.14, 0.38),
+      lookShift: new THREE.Vector3(0.12, 0.03, 0.06),
     };
   }
   return {
@@ -32,6 +39,8 @@ function frameForWidth(width) {
     modelScale: 1.0,
     dpr: 1.5,
     shadowSize: 2048,
+    cameraOut: new THREE.Vector3(0.23, 0.16, 0.42),
+    lookShift: new THREE.Vector3(0.14, 0.04, 0.07),
   };
 }
 
@@ -40,6 +49,9 @@ export function initFinalScene(canvas, host) {
     document.documentElement.dataset.v3FinalModel = 'fallback';
     return null;
   }
+
+  const section = host.closest('.final-cta') || host;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let renderer;
   try {
@@ -95,22 +107,57 @@ export function initFinalScene(canvas, host) {
   scene.add(new THREE.HemisphereLight(0xfffaf1, 0x51483f, 1.02));
   scene.add(new THREE.AmbientLight(0xfff4e5, 0.12));
 
+  const keyBase = key.position.clone();
   let frame = frameForWidth(host.clientWidth || window.innerWidth);
   let mixer = null;
   let actions = [];
   let disposed = false;
   let visible = false;
+  let targetProgress = 0;
+  let progress = 0;
+  let raf = 0;
 
-  const scrubStatic = () => {
-    for (const { action } of actions) {
+  const scrub = (value) => {
+    for (const { action, duration } of actions) {
       action.paused = true;
-      action.time = 0;
+      action.time = reducedMotion ? 0 : duration * value;
     }
     mixer?.update(0);
   };
 
   const render = () => {
     if (!disposed) renderer.render(scene, camera);
+  };
+
+  const applyMotionFrame = (value) => {
+    const eased = reducedMotion ? 0 : smoothstep(value);
+    camera.position.set(
+      frame.camera.x + frame.cameraOut.x * eased,
+      frame.camera.y + frame.cameraOut.y * eased,
+      frame.camera.z + frame.cameraOut.z * eased,
+    );
+    const look = frame.lookAt.clone().addScaledVector(frame.lookShift, eased);
+    camera.lookAt(look);
+
+    modelRoot.position.set(
+      frame.modelPosition.x + eased * 0.02,
+      frame.modelPosition.y - eased * 0.018,
+      frame.modelPosition.z,
+    );
+    modelRoot.scale.setScalar(frame.modelScale * (1 - eased * 0.018));
+    modelRoot.rotation.set(0, -0.10 + eased * 0.018, -0.008);
+
+    key.position.set(
+      keyBase.x + eased * 0.24,
+      keyBase.y + eased * 0.12,
+      keyBase.z - eased * 0.20,
+    );
+    shadowPlane.material.opacity = 0.13 - eased * 0.012;
+    host.style.setProperty('--final-photo-shift', `${-6 * eased}px`);
+    host.style.setProperty('--final-photo-scale', String(1 + 0.018 * eased));
+
+    scrub(eased);
+    render();
   };
 
   const applyFrame = () => {
@@ -123,13 +170,7 @@ export function initFinalScene(canvas, host) {
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.fov = frame.fov;
-    camera.position.copy(frame.camera);
-    camera.lookAt(frame.lookAt);
     camera.updateProjectionMatrix();
-
-    modelRoot.position.copy(frame.modelPosition);
-    modelRoot.scale.setScalar(frame.modelScale);
-    modelRoot.rotation.set(0, -0.10, -0.008);
 
     if (key.shadow.mapSize.x !== frame.shadowSize) {
       key.shadow.mapSize.set(frame.shadowSize, frame.shadowSize);
@@ -139,8 +180,37 @@ export function initFinalScene(canvas, host) {
       }
     }
 
-    scrubStatic();
-    render();
+    if (reducedMotion) {
+      progress = 0;
+      targetProgress = 0;
+    }
+    applyMotionFrame(progress);
+  };
+
+  const updateScroll = () => {
+    if (reducedMotion) return;
+    const rect = section.getBoundingClientRect();
+    const viewport = window.innerHeight || 800;
+    const start = viewport * 0.88;
+    const end = viewport * 0.18;
+    targetProgress = clamp((start - rect.top) / Math.max(1, start - end), 0, 1);
+    startLoop();
+  };
+
+  const tick = () => {
+    if (disposed || reducedMotion || !visible || document.hidden) {
+      raf = 0;
+      return;
+    }
+    progress += (targetProgress - progress) * 0.09;
+    if (Math.abs(targetProgress - progress) < 0.0005) progress = targetProgress;
+    applyMotionFrame(progress);
+    if (Math.abs(targetProgress - progress) > 0.0001) raf = requestAnimationFrame(tick);
+    else raf = 0;
+  };
+
+  const startLoop = () => {
+    if (!reducedMotion && visible && !raf && !document.hidden) raf = requestAnimationFrame(tick);
   };
 
   const loader = new GLTFLoader();
@@ -174,6 +244,7 @@ export function initFinalScene(canvas, host) {
       host.classList.add('final-model-ready');
       document.documentElement.dataset.v3FinalModel = 'ready';
       applyFrame();
+      updateScroll();
     },
     undefined,
     (error) => {
@@ -185,19 +256,26 @@ export function initFinalScene(canvas, host) {
 
   const observer = new IntersectionObserver((entries) => {
     visible = Boolean(entries[0]?.isIntersecting);
-    if (visible) render();
+    if (visible) {
+      updateScroll();
+      startLoop();
+    }
   }, { threshold: 0.02 });
-  observer.observe(host);
+  observer.observe(section);
 
   const resizeObserver = new ResizeObserver(() => {
     if (visible) applyFrame();
   });
   resizeObserver.observe(host);
 
+  if (!reducedMotion) window.addEventListener('scroll', updateScroll, { passive: true });
+
   return () => {
     disposed = true;
+    if (raf) cancelAnimationFrame(raf);
     observer.disconnect();
     resizeObserver.disconnect();
+    if (!reducedMotion) window.removeEventListener('scroll', updateScroll);
     mixer?.stopAllAction();
     renderer.dispose();
   };
