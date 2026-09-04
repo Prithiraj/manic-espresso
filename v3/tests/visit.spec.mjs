@@ -23,11 +23,12 @@ test('Visit location token static desktop 1600x1000', async ({ page }) => {
   await waitForVisit(page);
   expect(await page.evaluate(() => document.documentElement.dataset.v3VisitModel)).toBe('ready');
 
+  const visit = page.locator('#visit');
   await frameVisit(page);
-  await expect(page.locator('#visit-canvas')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Find Manic on Murray Street.' })).toBeVisible();
-  await expect(page.getByText('27 Murray St')).toBeVisible();
-  await expect(page.getByText('Monday–Saturday')).toBeVisible();
+  await expect(visit.locator('#visit-canvas')).toBeVisible();
+  await expect(visit.getByRole('heading', { name: 'Find Manic on Murray Street.' })).toBeVisible();
+  await expect(visit.locator('address').getByText('27 Murray St', { exact: true })).toBeVisible();
+  await expect(visit.getByText('Monday–Saturday', { exact: true })).toBeVisible();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
@@ -40,9 +41,10 @@ test('Visit location token static mobile 390x844', async ({ page }) => {
   await waitForVisit(page);
   expect(await page.evaluate(() => document.documentElement.dataset.v3VisitModel)).toBe('ready');
 
+  const visit = page.locator('#visit');
   await frameVisit(page);
-  await expect(page.getByRole('heading', { name: 'Find Manic on Murray Street.' })).toBeVisible();
-  await expect(page.getByText('27 Murray St')).toBeVisible();
+  await expect(visit.getByRole('heading', { name: 'Find Manic on Murray Street.' })).toBeVisible();
+  await expect(visit.locator('address').getByText('27 Murray St', { exact: true })).toBeVisible();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
@@ -56,9 +58,10 @@ test('Visit location token falls back to real exterior and semantic contact deta
   await waitForVisit(page);
   expect(await page.evaluate(() => document.documentElement.dataset.v3VisitModel)).toBe('fallback');
 
+  const visit = page.locator('#visit');
   await frameVisit(page);
-  await expect(page.locator('.visit-real-photo img')).toBeVisible();
-  await expect(page.getByText('27 Murray St')).toBeVisible();
-  await expect(page.getByRole('link', { name: '0401 866 609' })).toBeVisible();
-  await expect(page.locator('.visit-fallback-note')).toBeVisible();
+  await expect(visit.locator('.visit-real-photo img')).toBeVisible();
+  await expect(visit.locator('address').getByText('27 Murray St', { exact: true })).toBeVisible();
+  await expect(visit.getByRole('link', { name: '0401 866 609' })).toBeVisible();
+  await expect(visit.locator('.visit-fallback-note')).toBeVisible();
 });
