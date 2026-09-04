@@ -2,6 +2,7 @@ import './styles.css';
 import './why-slice.css';
 import './menu-slice.css';
 import './cafe-slice.css';
+import './review-slice.css';
 import './gallery-slice.css';
 import './visit-slice.css';
 import './final-slice.css';
@@ -9,6 +10,7 @@ import { initHeroScene } from './hero-scene.js';
 import { initWhyScene } from './why-scene.js';
 import { initMenuScene } from './menu-scene.js';
 import { initCafeScene } from './cafe-scene.js';
+import { initReviewScene } from './review-scene.js';
 import { initGalleryScene } from './gallery-scene.js';
 import { initVisitScene } from './visit-scene.js';
 import { initFinalScene } from './final-scene.js';
@@ -111,6 +113,16 @@ function initCafe() {
   }
 }
 
+function initReview() {
+  const canvas = document.getElementById('review-canvas');
+  const host = document.querySelector('[data-review-stage]');
+  const dispose = initReviewScene(canvas, host);
+  if (!dispose && !document.documentElement.dataset.v3ReviewModel) {
+    host?.classList.add('review-model-failed');
+    document.documentElement.dataset.v3ReviewModel = 'fallback';
+  }
+}
+
 function initGallery() {
   const canvas = document.getElementById('gallery-canvas');
   const host = document.querySelector('[data-gallery-stage]');
@@ -165,6 +177,7 @@ initHero();
 initWhy();
 initMenu();
 initCafe();
+initReview();
 initGallery();
 initVisit();
 initFinal();
