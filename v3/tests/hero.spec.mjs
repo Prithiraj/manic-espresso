@@ -10,6 +10,11 @@ async function waitForReady(page) {
   await page.waitForTimeout(250);
 }
 
+async function waitForMenu(page) {
+  await page.waitForFunction(() => Boolean(document.documentElement.dataset.v3MenuModel));
+  await page.waitForTimeout(250);
+}
+
 test('hero static desktop 1600x1000', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/', { waitUntil: 'networkidle' });
@@ -22,10 +27,7 @@ test('hero static desktop 1600x1000', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 
-  await page.screenshot({
-    path: 'qa-screenshots/hero-desktop-1600x1000.png',
-    fullPage: false
-  });
+  await page.screenshot({ path: 'qa-screenshots/hero-desktop-1600x1000.png', fullPage: false });
 });
 
 test('hero static mobile 390x844', async ({ page }) => {
@@ -40,10 +42,7 @@ test('hero static mobile 390x844', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 
-  await page.screenshot({
-    path: 'qa-screenshots/hero-mobile-390x844.png',
-    fullPage: false
-  });
+  await page.screenshot({ path: 'qa-screenshots/hero-mobile-390x844.png', fullPage: false });
 });
 
 test('Hero scrubs Blender clips on scroll when motion is allowed', async ({ page }) => {
@@ -79,19 +78,55 @@ test('Hero scrubs Blender clips on scroll when motion is allowed', async ({ page
   const length = Math.min(before.length, after.length);
   expect(Buffer.compare(before.subarray(0, length), after.subarray(0, length))).not.toBe(0);
 
-  await page.screenshot({
-    path: 'qa-screenshots/hero-scroll-mid-1600x1000.png',
-    fullPage: false
-  });
+  await page.screenshot({ path: 'qa-screenshots/hero-scroll-mid-1600x1000.png', fullPage: false });
 });
 
-test('WebGL fallback remains complete if the model is unavailable', async ({ page }) => {
+test('Menu assembled Blender frame desktop 1600x1000', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await waitForReady(page);
+  await waitForMenu(page);
+  expect(await page.evaluate(() => document.documentElement.dataset.v3MenuModel)).toBe('ready');
+
+  const menu = page.locator('#menu');
+  await menu.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(350);
+  await expect(page.locator('#menu-canvas')).toBeVisible();
+  await expect(page.getByText('Breakfast that earns the detour.')).toBeVisible();
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: 'qa-screenshots/menu-static-desktop-1600x1000.png', fullPage: false });
+});
+
+test('Menu assembled Blender frame mobile 390x844', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await waitForReady(page);
+  await waitForMenu(page);
+  expect(await page.evaluate(() => document.documentElement.dataset.v3MenuModel)).toBe('ready');
+
+  await page.locator('#menu').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(350);
+  await expect(page.locator('#menu-canvas')).toBeVisible();
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: 'qa-screenshots/menu-static-mobile-390x844.png', fullPage: false });
+});
+
+test('WebGL fallbacks remain complete if Blender models are unavailable', async ({ page }) => {
   await page.route('**/models/manic-hero.glb', (route) => route.abort());
+  await page.route('**/models/manic-menu.glb', (route) => route.abort());
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/', { waitUntil: 'networkidle' });
   await waitForReady(page);
+  await waitForMenu(page);
 
   expect(await page.evaluate(() => document.documentElement.dataset.v3Model)).toBe('fallback');
+  expect(await page.evaluate(() => document.documentElement.dataset.v3MenuModel)).toBe('fallback');
   await expect(page.locator('.model-fallback')).toBeVisible();
+  await page.locator('#menu').scrollIntoViewIfNeeded();
+  await expect(page.locator('.menu-model-fallback')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Get directions' }).first()).toBeVisible();
 });
