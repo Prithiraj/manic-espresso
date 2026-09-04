@@ -1,0 +1,160 @@
+.final-cta {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(24rem, .92fr);
+  gap: clamp(2rem, 5vw, 6rem);
+  align-items: center;
+  min-height: 100svh;
+  padding: clamp(6rem, 9vw, 10rem) clamp(1.25rem, 4vw, 4rem);
+  background: #242321;
+  color: #fffdf8;
+  overflow: clip;
+}
+
+.final-copy { position: relative; z-index: 9; max-width: 42rem; }
+.final-copy h2 { max-width: 8.5ch; margin-top: 1rem; }
+.final-copy > p:not(.eyebrow) { max-width: 35rem; margin-top: 1.4rem; color: rgba(255,253,248,.72); }
+.final-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.3rem; margin-top: 2rem; }
+.final-actions .button { background: #fffdf8; color: #242321; }
+.final-actions .text-link { color: #fffdf8; }
+
+.final-stage {
+  position: relative;
+  min-height: clamp(34rem, 48vw, 47rem);
+  isolation: isolate;
+  overflow: clip;
+}
+
+.final-stage::before {
+  content: "";
+  position: absolute;
+  inset: 4% 1% 3% 0;
+  z-index: 0;
+  border-radius: 17% 14% 20% 12% / 18% 13% 21% 18%;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 17rem),
+    linear-gradient(145deg, rgba(255,253,248,.10), rgba(173,134,77,.055));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.final-real-photo {
+  position: absolute;
+  z-index: 2;
+  top: 7%;
+  right: 1%;
+  width: 27%;
+  height: 34%;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 1rem;
+  transform: translate3d(0, var(--final-photo-shift, 0px), 0) rotate(2.4deg) scale(var(--final-photo-scale, 1));
+  transform-origin: 50% 50%;
+  box-shadow: 0 24px 60px rgba(0,0,0,.24);
+  will-change: transform;
+}
+
+.final-real-photo img { width: 100%; height: 100%; object-fit: cover; }
+.final-real-photo figcaption {
+  position: absolute;
+  right: .65rem;
+  bottom: .65rem;
+  padding: .36rem .52rem;
+  border-radius: 999px;
+  background: rgba(255,253,248,.84);
+  color: #242321;
+  font-size: .58rem;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.final-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+.final-stage.final-model-ready .final-canvas { opacity: 1; }
+
+.final-model-fallback {
+  position: absolute;
+  z-index: 3;
+  left: 10%;
+  bottom: 5%;
+  width: 54%;
+  height: 50%;
+  object-fit: cover;
+  border-radius: 1rem;
+  opacity: .58;
+  box-shadow: 0 24px 60px rgba(0,0,0,.22);
+}
+.final-stage.final-model-ready .final-model-fallback { opacity: 0; }
+
+.final-label {
+  position: absolute;
+  z-index: 8;
+  left: 5%;
+  bottom: 8%;
+  display: grid;
+  place-items: center;
+  width: 6rem;
+  aspect-ratio: 1;
+  border: 1px dashed rgba(255,255,255,.6);
+  border-radius: 50%;
+  background: rgba(255,253,248,.10);
+  color: #fffdf8;
+  transform: rotate(-8deg);
+  backdrop-filter: blur(8px);
+}
+.final-label span { font-size: .52rem; font-weight: 900; letter-spacing: .16em; }
+
+.final-fallback-note {
+  display: none;
+  position: absolute;
+  z-index: 7;
+  left: 8%;
+  bottom: 22%;
+  max-width: 16rem;
+  padding: .7rem .85rem;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: .7rem;
+  background: rgba(36,35,33,.82);
+  color: #fffdf8;
+  font-size: .68rem;
+  line-height: 1.4;
+}
+.final-stage.final-model-failed .final-fallback-note { display: block; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .final-real-photo { transition: transform .12s linear; }
+}
+
+@media (max-width: 980px) {
+  .final-cta { grid-template-columns: 1fr; }
+  .final-copy { order: 1; }
+  .final-stage { order: 2; min-height: 38rem; }
+}
+
+@media (max-width: 620px) {
+  .final-cta { min-height: auto; padding: 5.5rem 1.1rem 6.5rem; }
+  .final-stage { min-height: 28rem; margin-top: .8rem; }
+  .final-real-photo { width: 31%; height: 31%; }
+  .final-model-fallback { left: 4%; width: 66%; height: 55%; }
+  .final-label { width: 4.7rem; bottom: 5%; }
+  .final-actions { align-items: stretch; }
+  .final-actions .button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .final-canvas,
+  .final-model-fallback,
+  .final-real-photo { transition: none !important; }
+  .final-canvas,
+  .final-model-fallback { transform: none !important; }
+  .final-real-photo { transform: rotate(2.4deg) !important; }
+}
