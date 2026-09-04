@@ -1,0 +1,121 @@
+.place {
+  position: relative;
+  min-height: 100svh;
+}
+
+.place > div:first-child { position: relative; z-index: 8; }
+
+.place-photos.cafe-stage {
+  position: relative;
+  display: block;
+  min-height: clamp(34rem, 48vw, 46rem);
+  isolation: isolate;
+  overflow: visible;
+}
+
+.cafe-stage::before {
+  content: "";
+  position: absolute;
+  inset: 2% 0 2% 3%;
+  z-index: 0;
+  border-radius: 17% 13% 19% 14% / 16% 21% 15% 20%;
+  background:
+    radial-gradient(circle at 65% 28%, rgba(255,255,255,.82), transparent 18rem),
+    linear-gradient(145deg, rgba(220,210,195,.74), rgba(248,243,234,.16));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.50);
+}
+
+.place-photos.cafe-stage > img {
+  position: absolute;
+  z-index: 2;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px rgba(63,50,40,.15);
+}
+
+.place-photos.cafe-stage > img:first-of-type {
+  top: 5%;
+  right: 1%;
+  width: 27%;
+  height: 39%;
+  transform: rotate(2.8deg);
+}
+
+.place-photos.cafe-stage > img:nth-of-type(2) {
+  right: 0;
+  bottom: 4%;
+  width: 29%;
+  height: 34%;
+  transform: rotate(-1.8deg);
+}
+
+.cafe-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .32s ease;
+}
+
+.cafe-stage.cafe-model-ready .cafe-canvas { opacity: 1; }
+
+.cafe-label {
+  position: absolute;
+  z-index: 7;
+  left: 5%;
+  bottom: 7%;
+  display: grid;
+  place-items: center;
+  width: 6.2rem;
+  aspect-ratio: 1;
+  border: 1px dashed rgba(255,255,255,.70);
+  border-radius: 50%;
+  background: rgba(36,35,33,.76);
+  color: #fffdf8;
+  transform: rotate(-7deg);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 14px 34px rgba(36,35,33,.14);
+}
+
+.cafe-label span {
+  font-size: .53rem;
+  font-weight: 900;
+  letter-spacing: .17em;
+}
+
+.cafe-fallback-note {
+  display: none;
+  position: absolute;
+  z-index: 4;
+  left: 6%;
+  bottom: 22%;
+  max-width: 15rem;
+  padding: .7rem .85rem;
+  border: 1px solid rgba(36,35,33,.16);
+  border-radius: .7rem;
+  background: rgba(255,253,248,.82);
+  font-size: .68rem;
+  font-weight: 750;
+  line-height: 1.4;
+  backdrop-filter: blur(8px);
+}
+
+.cafe-stage.cafe-model-failed .cafe-fallback-note { display: block; }
+
+@media (max-width: 980px) {
+  .place-photos.cafe-stage { min-height: 40rem; }
+}
+
+@media (max-width: 620px) {
+  .place-photos.cafe-stage { min-height: 27rem; margin-top: 1.2rem; }
+  .place-photos.cafe-stage > img:first-of-type { width: 34%; height: 39%; }
+  .place-photos.cafe-stage > img:nth-of-type(2) { width: 36%; height: 34%; }
+  .cafe-label { width: 4.7rem; bottom: 5%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cafe-canvas { transition: none !important; }
+}
