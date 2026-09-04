@@ -53,6 +53,7 @@
   border-radius: .85rem;
   background: #ddd2c1;
   box-shadow: 0 24px 60px rgba(54,42,33,.19);
+  transform-origin: 50% 50%;
 }
 .gallery-photo img { width: 100%; height: 100%; object-fit: cover; }
 .gallery-photo figcaption {
@@ -74,21 +75,27 @@
   top: 16%;
   width: 49%;
   height: 43%;
-  transform: rotate(-2.3deg);
+  transform: translate3d(0, var(--gallery-wide-y, 0px), 0)
+    rotate(calc(-2.3deg + var(--gallery-wide-rotate, 0deg)))
+    scale(var(--gallery-wide-scale, 1));
 }
 .gallery-photo-tall {
   right: 9%;
   top: 9%;
   width: 23%;
   height: 39%;
-  transform: rotate(3.2deg);
+  transform: translate3d(0, var(--gallery-tall-y, 0px), 0)
+    rotate(calc(3.2deg + var(--gallery-tall-rotate, 0deg)))
+    scale(var(--gallery-tall-scale, 1));
 }
 .gallery-photo-food {
   right: 13%;
   bottom: 10%;
   width: 31%;
   height: 31%;
-  transform: rotate(-2.5deg);
+  transform: translate3d(0, var(--gallery-food-y, 0px), 0)
+    rotate(calc(-2.5deg + var(--gallery-food-rotate, 0deg)))
+    scale(var(--gallery-food-scale, 1));
 }
 
 .gallery-label {
@@ -135,6 +142,10 @@
   line-height: 1.55;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .gallery-photo { will-change: transform; }
+}
+
 @media (max-width: 980px) {
   .gallery-heading { grid-template-columns: 1fr; }
   .gallery-stage { min-height: 45rem; }
@@ -155,4 +166,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .gallery-canvas { transition: none !important; }
+  .gallery-photo-wide,
+  .gallery-photo-tall,
+  .gallery-photo-food { will-change: auto; }
 }
