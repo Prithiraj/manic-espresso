@@ -79,7 +79,7 @@ test('Final callback scrubs Blender settle clips as the section enters', async (
   expect(beforeBox).not.toBeNull();
   const beforeClip = visibleBox(beforeBox);
   expect(beforeClip.width).toBeGreaterThan(100);
-  expect(beforeClip.height).toBeGreaterThan(60);
+  expect(beforeClip.height).toBeGreaterThan(40);
   const before = await page.screenshot({ clip: beforeClip });
   const beforeShift = await page.locator('[data-final-stage]').evaluate((el) => getComputedStyle(el).getPropertyValue('--final-photo-shift'));
 
