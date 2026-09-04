@@ -48,6 +48,44 @@ test('Final ceramic callback static mobile 390x844', async ({ page }) => {
   await page.screenshot({ path: 'qa-screenshots/final-static-mobile-390x844.png', fullPage: false });
 });
 
+test('Final callback scrubs Blender settle clips as the section enters', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await waitForFinal(page);
+
+  const clips = await page.evaluate(() => document.documentElement.dataset.v3FinalClips || '');
+  expect(clips).toContain('ACT_FINAL_CUP_SETTLE');
+  expect(clips).toContain('ACT_FINAL_RECEIPT_SETTLE');
+  expect(clips).toContain('ACT_FINAL_SPOON_SETTLE');
+
+  const sectionTop = await page.evaluate(() => document.querySelector('.final-cta').offsetTop);
+  await page.evaluate((top) => window.scrollTo({ top: top - window.innerHeight * 0.80, behavior: 'instant' }), sectionTop);
+  await page.waitForTimeout(750);
+
+  const canvas = page.locator('#final-canvas');
+  const beforeBox = await canvas.boundingBox();
+  expect(beforeBox).not.toBeNull();
+  const before = await page.screenshot({ clip: beforeBox });
+  const beforeShift = await page.locator('[data-final-stage]').evaluate((el) => getComputedStyle(el).getPropertyValue('--final-photo-shift'));
+
+  await page.evaluate((top) => window.scrollTo({ top: top - window.innerHeight * 0.20, behavior: 'instant' }), sectionTop);
+  await page.waitForTimeout(1100);
+
+  const afterBox = await canvas.boundingBox();
+  expect(afterBox).not.toBeNull();
+  const after = await page.screenshot({ clip: afterBox });
+  const length = Math.min(before.length, after.length);
+  expect(Buffer.compare(before.subarray(0, length), after.subarray(0, length))).not.toBe(0);
+
+  const afterShift = await page.locator('[data-final-stage]').evaluate((el) => getComputedStyle(el).getPropertyValue('--final-photo-shift'));
+  expect(afterShift).not.toBe(beforeShift);
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: 'qa-screenshots/final-motion-mid-1600x1000.png', fullPage: false });
+});
+
 test('Final callback falls back to real coffee and semantic CTA', async ({ page }) => {
   await page.route('**/models/manic-final.glb', (route) => route.abort());
   await page.setViewportSize({ width: 1280, height: 800 });
