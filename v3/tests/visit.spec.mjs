@@ -49,6 +49,16 @@ test('Visit location token static mobile 390x844', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
   await page.screenshot({ path: 'qa-screenshots/visit-static-mobile-390x844.png', fullPage: false });
+
+  await page.evaluate(() => {
+    const stage = document.querySelector('[data-visit-stage]');
+    const header = document.querySelector('.site-header');
+    const top = stage ? stage.offsetTop + stage.parentElement.offsetTop - (header?.offsetHeight || 0) - 18 : 0;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+  });
+  await page.waitForTimeout(450);
+  await expect(visit.locator('#visit-canvas')).toBeVisible();
+  await page.screenshot({ path: 'qa-screenshots/visit-static-mobile-stage-390x844.png', fullPage: false });
 });
 
 test('Visit location token falls back to real exterior and semantic contact details', async ({ page }) => {
