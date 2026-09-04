@@ -8,6 +8,15 @@ const ROOT_NAMES = {
   find: 'WHY_FIND_ROOT'
 };
 
+const ACTION_GROUPS = {
+  plate: (name) => name.startsWith('ACT_WHY_PLATE_'),
+  welcome: (name) => name === 'ACT_WHY_CHAIR_OPEN' || name === 'ACT_WHY_CUP_WELCOME',
+  find: (name) => name === 'ACT_WHY_DOOR_REVEAL'
+};
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const smoothstep = (value) => value * value * (3 - 2 * value);
+
 function cameraFrame(key, width) {
   const mobile = width < 620;
   const tablet = width < 980;
@@ -41,6 +50,13 @@ function cameraFrame(key, width) {
   };
 }
 
+function progressForCard(rect) {
+  const viewport = window.innerHeight || 800;
+  const start = viewport * 0.88;
+  const end = viewport * 0.26;
+  return clamp((start - rect.top) / Math.max(1, start - end), 0, 1);
+}
+
 export function initWhyScene(canvas, host) {
   if (!canvas || !host || !('WebGLRenderingContext' in window)) {
     document.documentElement.dataset.v3WhyModel = 'fallback';
@@ -52,6 +68,8 @@ export function initWhyScene(canvas, host) {
     document.documentElement.dataset.v3WhyModel = 'fallback';
     return null;
   }
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let renderer;
   try {
@@ -97,12 +115,33 @@ export function initWhyScene(canvas, host) {
 
   const cameras = CARD_KEYS.map(() => new THREE.PerspectiveCamera(34, 1, 0.1, 35));
   const roots = new Map();
+  const actionsByCard = new Map(CARD_KEYS.map((keyName) => [keyName, []]));
+  let mixer = null;
   let disposed = false;
   let visible = false;
+  let raf = 0;
 
   const hideAll = () => roots.forEach((root) => { root.visible = false; });
 
+  const applyCardAnimation = (keyName, progress) => {
+    const actions = actionsByCard.get(keyName) || [];
+    const eased = smoothstep(progress);
+
+    for (const { action, duration } of actions) {
+      action.paused = true;
+      if (reducedMotion) {
+        // The approved plate frame is assembled at the END of its Blender clips;
+        // welcome/find approved static frames are at the START of their clips.
+        action.time = keyName === 'plate' ? duration : 0;
+      } else {
+        action.time = duration * eased;
+      }
+    }
+    mixer?.update(0);
+  };
+
   const render = () => {
+    raf = 0;
     if (disposed || roots.size !== 3) return;
 
     const hostRect = host.getBoundingClientRect();
@@ -142,16 +181,30 @@ export function initWhyScene(canvas, host) {
       hideAll();
       root.visible = true;
 
+      const progress = reducedMotion ? (keyName === 'plate' ? 1 : 0) : progressForCard(rect);
+      applyCardAnimation(keyName, progress);
+
       const frame = cameraFrame(keyName, rect.width);
-      root.position.set(0, keyName === 'plate' ? -0.20 : keyName === 'welcome' ? -0.10 : -0.08, 0);
+      const motionBias = reducedMotion ? 0 : smoothstep(progress) * 0.06;
+      root.position.set(
+        keyName === 'find' ? motionBias * 0.30 : 0,
+        (keyName === 'plate' ? -0.20 : keyName === 'welcome' ? -0.10 : -0.08) + motionBias * 0.18,
+        0
+      );
       root.scale.setScalar(frame.scale);
-      root.rotation.set(0, frame.rotationY, 0);
+      root.rotation.set(0, frame.rotationY + motionBias * 0.18, 0);
 
       const camera = cameras[index];
       camera.aspect = widthCss / heightCss;
       camera.fov = frame.fov;
-      camera.position.copy(frame.position);
-      camera.lookAt(frame.lookAt);
+      camera.position.set(
+        frame.position.x - motionBias * 0.35,
+        frame.position.y + motionBias * 0.12,
+        frame.position.z - motionBias * 0.42
+      );
+      const look = frame.lookAt.clone();
+      look.y += motionBias * 0.08;
+      camera.lookAt(look);
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
     });
@@ -159,6 +212,11 @@ export function initWhyScene(canvas, host) {
     hideAll();
     document.documentElement.dataset.v3WhyModel = 'ready';
     host.classList.add('why-model-ready');
+  };
+
+  const requestRender = () => {
+    if (!visible || disposed || raf) return;
+    raf = requestAnimationFrame(render);
   };
 
   const loader = new GLTFLoader();
@@ -184,8 +242,26 @@ export function initWhyScene(canvas, host) {
         roots.set(keyName, object);
       }
 
+      if (gltf.animations?.length) {
+        mixer = new THREE.AnimationMixer(gltf.scene);
+        for (const clip of gltf.animations) {
+          const keyName = CARD_KEYS.find((candidate) => ACTION_GROUPS[candidate](clip.name));
+          if (!keyName) continue;
+          const action = mixer.clipAction(clip);
+          action.play();
+          action.paused = true;
+          actionsByCard.get(keyName).push({ action, duration: clip.duration, name: clip.name });
+        }
+        document.documentElement.dataset.v3WhyClips = [...actionsByCard.values()]
+          .flat()
+          .map(({ name }) => name)
+          .sort()
+          .join(',');
+      }
+
       scene.add(gltf.scene);
       hideAll();
+      visible = true;
       render();
     },
     undefined,
@@ -198,19 +274,22 @@ export function initWhyScene(canvas, host) {
 
   const observer = new IntersectionObserver((entries) => {
     visible = Boolean(entries[0]?.isIntersecting);
-    if (visible) render();
+    if (visible) requestRender();
   }, { threshold: 0.02 });
   observer.observe(host);
 
-  const resizeObserver = new ResizeObserver(() => {
-    if (visible) render();
-  });
+  const resizeObserver = new ResizeObserver(requestRender);
   resizeObserver.observe(host);
+
+  if (!reducedMotion) window.addEventListener('scroll', requestRender, { passive: true });
 
   return () => {
     disposed = true;
+    if (raf) cancelAnimationFrame(raf);
     observer.disconnect();
     resizeObserver.disconnect();
+    if (!reducedMotion) window.removeEventListener('scroll', requestRender);
+    mixer?.stopAllAction();
     renderer.dispose();
   };
 }
