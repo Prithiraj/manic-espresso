@@ -38,7 +38,9 @@ jobs:
           mkdir -p site/assets/images/models
           blender --background --python v3/blender/hero.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-hero.glb"
           blender --background --python v3/blender/menu.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-menu.glb"
-          blender --background --python v3/blender/cafe.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe.glb"
+          blender --background --python v3/blender/cafe.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe-base.glb"
+          blender --background --python v3/blender/cafe_motion.py -- --input "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe-base.glb" --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe.glb"
+          rm -f site/assets/images/models/manic-cafe-base.glb
           test -s site/assets/images/models/manic-hero.glb
           test -s site/assets/images/models/manic-menu.glb
           test -s site/assets/images/models/manic-cafe.glb
