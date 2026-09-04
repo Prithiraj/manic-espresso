@@ -1,8 +1,4 @@
-# Slice 06 — Visit location token
-
-## Status
-
-**STATIC GATE PASSED — motion pass in progress.**
+# Slice 06 — Visit location token — APPROVED
 
 ## Purpose
 
@@ -22,7 +18,7 @@ Turn the location/contact section into a tactile physical moment without inventi
 - `visit-static-desktop-1600x1000.png`
 - `visit-static-mobile-390x844.png`
 - `visit-static-mobile-stage-390x844.png`
-- generated `manic-visit.glb` (~348 KiB before final compression)
+- generated `manic-visit.glb`
 
 ## Desktop static review — PASS
 
@@ -42,20 +38,26 @@ The first 390×844 section-start frame intentionally prioritises address/hours/C
 - The model is simplified by framing rather than by shrinking into an unreadable desktop scene.
 - No horizontal overflow.
 
-## Fallback / performance — PASS FOR STATIC SLICE 06
+## Motion review — PASS
 
-- If `manic-visit.glb` fails, the real exterior photograph and all address/hours/phone/directions content remain usable.
-- One key light casts shadows; fill/ambient do not.
-- Static rendering is event-driven rather than a permanent idle RAF loop.
+**Reviewed:** `visit-motion-mid-1600x1000.png` from successful V3 slice QA run `33859435610`.
 
-## Static verdict
+Blender-authored clips:
 
-**APPROVED for motion.**
+- `ACT_VISIT_PIN_RISE`
+- `ACT_VISIT_PAPER_SPREAD_2`
+- `ACT_VISIT_PAPER_SPREAD_3`
 
-## Motion requirements
+The pin rises only slightly while its separate contact cue remains on the physical card. The top paper sheets separate by a few millimetres, and a small grazing-light shift makes the abstract relief lines more legible without turning the section into a camera move. The real exterior image and semantic address remain visible and stable through the motion state.
 
-- location pin rises only a small distance and retains a grounded contact relationship
-- grazing key shifts enough to reveal street-line relief
-- top paper sheets separate by only a few millimetres
-- camera stays mostly fixed
-- reduced motion holds the approved static card
+## Reduced motion / fallback / performance — PASS
+
+- Reduced motion holds the approved static card with all Visit clips at frame zero.
+- If `manic-visit.glb` fails, real exterior photography plus address/hours/phone/directions remain complete.
+- One key light casts shadows.
+- Camera movement is almost imperceptible; most of the spatial change comes from the Blender pin/paper clips and light.
+- RAF work only continues while the visible scroll state converges.
+
+## Verdict
+
+**LOCKED. Proceed to Slice 07 — Gallery photo table.**
