@@ -1,185 +1,155 @@
 # V3 Slice Review Log
 
-This file records the visual gate for each Blender/Three.js slice. A slice is not marked approved merely because it builds.
+V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enough: each slice must pass static composition, desktop/mobile framing, motion, fallback, and performance checks before the next high-priority slice is approved.
 
-## Review scale
+## Status
 
-Each slice is reviewed against:
-
-- composition / hierarchy
-- camera / perspective
-- lighting direction
-- cast and contact shadows
-- material separation
-- geometry fidelity
-- relationship to real Manic photography
-- responsive framing
-- reduced-motion/static state
-- performance / loading
-
-## Slice status
-
-| Slice | Static build | Desktop review | Mobile review | Motion review | Performance | Status |
+| Slice | Static | Desktop | Mobile | Motion | Performance | Status |
 |---|---|---|---|---|---|---|
 | Hero ceramic | Pass | Pass | Pass | Pass | Pass | **Approved** |
-| Proof tokens | Not started | — | — | — | — | Deferred |
+| Menu exploded breakfast | Pass | Pass | Pass | Pass | Pass | **Approved** |
+| Café miniature cutaway | In progress | Pending | Pending | Pending | Pending | **Building** |
 | Why Manic still lifes | Not started | — | — | — | — | Planned |
-| Menu exploded breakfast | Pass | Pass | Pass | Pending | Pass | **Static gate passed** |
-| Café miniature cutaway | Not started | — | — | — | — | Planned |
-| Review paper | Not started | — | — | — | — | Planned |
-| Gallery photo table | Not started | — | — | — | — | Planned |
-| Visit location token | Not started | — | — | — | — | Planned |
 | Final ceramic callback | Not started | — | — | — | — | Planned |
+| Visit location token | Not started | — | — | — | — | Planned |
+| Gallery photo table | Not started | — | — | — | — | Planned |
+| Review paper | Not started | — | — | — | — | Planned |
+| Proof tokens | Not started | — | — | — | — | Deferred |
 
 ---
 
-## Hero ceramic — review notes
+# Slice 01 — Hero ceramic
 
-### Intended static frame
+## Static gate — PASS
 
-- HTML headline and conversion actions remain dominant on the left.
-- Real Manic interior/coffee/breakfast photography remains visible on the right.
-- Blender ceramic set occupies the lower-right foreground, creating a spatial diagonal toward the image collage.
-- The cup should feel crafted rather than generated from obvious primitives.
-- Saucer and cup contact must be believable before any lift animation is enabled.
-- Camera should reveal coffee surface and cup side simultaneously without wide-angle distortion.
-
-### Blender object list
-
-- custom lathed cup shell with hollow interior
-- separate coffee/crema surface
-- custom lathed saucer
-- curved spoon
-- folded napkin
-- restrained floral detail
-- thin plinth/table slice for grounding
-
-### Lighting target
-
-One warm key from upper-left/front-left, weak cool-neutral fill, soft environmental contribution. Only the key casts shadows.
-
-### QA run
-
-CI installs Blender 4.0.2 plus `python3-numpy`, generates the GLB headlessly, builds the Vite production bundle, and renders deterministic reduced-motion screenshots.
-
-Artifacts reviewed:
-
+**Artifacts reviewed**
 - `hero-desktop-1600x1000.png`
 - `hero-mobile-390x844.png`
+- generated `manic-hero.glb` (~629 KiB before final compression)
+
+**Review**
+- Headline and conversion actions remain the dominant mass.
+- Real Manic interior, coffee, and pancake photography stays visually important.
+- Custom lathed cup, hollow interior, curved handle, saucer, spoon, napkin, floral detail, and grounding plinth read as a crafted still life rather than default primitives.
+- Restrained perspective reveals both coffee surface and cup side.
+- One warm upper-left/front-left key gives coherent cast/contact shadows and stable grounding.
+- Mobile remains text-led while revealing the Blender composition in the lower part of the first scroll.
+- Explicit GLB-abort QA proves the real-photo fallback and CTAs remain functional.
+
+## Motion gate — PASS
+
+**Artifact reviewed**
 - `hero-scroll-mid-1600x1000.png`
-- generated `manic-hero.glb` (~629 KiB before further compression work)
 
-### Desktop static review — PASS
+**Blender clips confirmed**
+- `ACT_HERO_CUP_LIFT`
+- `ACT_HERO_SPOON_SHIFT`
 
-- **Composition:** The headline remains the dominant mass; the Blender set sits in the right-hand photo field instead of becoming a centred 3D product demo.
-- **Perspective:** Cup top and side are both readable. Perspective is restrained and does not feel game-like.
-- **Grounding:** Cup/saucer/plinth relationship reads clearly. Broad plinth and directional shadow establish physical weight.
-- **Materials:** Ceramic, coffee, brass spoon, and paper napkin separate adequately under the warm key.
-- **Photography relationship:** Interior, coffee, and pancake images remain important and visibly real; Blender behaves as a foreground layer around them.
-- **Geometry:** The custom cup silhouette and curved handle no longer read as an obvious default primitive.
+**Review**
+- Three.js scrubs Blender-authored object animation; it does not rotate the full world as a shortcut.
+- Camera uses a shallow dolly/arc and very small look-target change.
+- Saucer/plinth remain the stable grounded mass while the cup lift stays intentionally small.
+- Key light moves within the same morning-light direction and shadow softness remains coherent.
+- Reduced motion locks the exact approved static frame at Blender clip time zero.
 
-### Mobile static review — PASS
-
-- Headline/actions remain readable and conversion-first.
-- One strong real interior image plus the coffee image are preserved; the pancake card is removed at the mobile breakpoint.
-- The Blender set begins in the lower part of the first scroll, keeping the first viewport text-led while still becoming visible before the Hero exits.
-
-### Fallback review — PASS
-
-Playwright explicitly aborts `models/manic-hero.glb`; the real coffee fallback remains visible and the directions CTA remains functional. No essential content depends on WebGL.
-
-### Performance review — PASS FOR SLICE 01
-
-- Generated GLB is ~629 KiB before compression.
-- DPR is capped by breakpoint.
-- Only one shadow-casting key light is used.
-- IntersectionObserver stops the animation loop once the Hero leaves view.
-
-### Hero motion review — PASS
-
-The motion test explicitly confirms the exported Blender actions `ACT_HERO_CUP_LIFT` and `ACT_HERO_SPOON_SHIFT` are present and that the rendered WebGL frame changes after deterministic scrolling.
-
-- **Blender motion is the object motion source:** Three.js scrubs the Blender animation clips instead of rotating the complete scene.
-- **Camera choreography:** shallow dolly/arc and slight upward look-target change preserve the product-photography perspective.
-- **Grounding:** saucer/plinth remains the stable mass while the cup lift is small enough to avoid a floating-object effect.
-- **Lighting:** the key shifts subtly in the same upper-left/front-left family.
-- **Reduced motion:** progress remains at the approved static frame and Blender clips are held at time zero.
-
-### Hero verdict
-
-**APPROVED. Slice 01 is locked.**
+**Verdict: APPROVED / LOCKED.**
 
 ---
 
-## Menu exploded breakfast — review notes
+# Slice 02 — Menu exploded breakfast
 
-### Purpose
+## Static gate — PASS
 
-Create V3's second major spatial moment: one evidence-compatible, stylised breakfast composition that begins assembled and later separates in a shallow spiral while the real menu text remains semantic HTML.
-
-### Blender static model
-
-The generated plate includes:
-
-- custom lathed ceramic plate/rim
-- toast with separate crust/body geometry
-- irregular egg white made from overlapping lobes plus raised yolk
-- avocado fan
-- tomato slices
-- small feta forms
-- greens/stem details
-- fork and knife scale cues
-- charcoal presentation slab for grounding
-
-The composition intentionally references breakfast ingredients found in the current menu language without claiming that this is Manic Espresso's exact current plating.
-
-### Static QA artifacts reviewed
-
+**Artifacts reviewed**
 - `menu-static-desktop-1600x1000.png`
 - `menu-static-mobile-390x844.png`
-- generated `manic-menu.glb` (~721 KiB before compression)
+- generated `manic-menu.glb` (~721 KiB before animation; ~754 KiB with animation)
 
-### Desktop static review — PASS
+**Blender composition**
+- custom ceramic plate/rim
+- layered toast/crust
+- irregular egg-white lobes + yolk
+- avocado fan
+- tomato discs
+- feta forms
+- greens/stem
+- fork + knife
+- charcoal presentation slab
 
-- **Recognition:** toast, egg/yolk, avocado, tomato and greens are immediately legible as a breakfast sculpture rather than generic primitives.
-- **Composition:** the real Manic breakfast-roll photograph sits as an editorial truth/reference card while the Blender plate remains the larger spatial mass.
-- **Camera:** the elevated three-quarter view gives enough plate depth without becoming an overhead flat lay.
-- **Grounding:** the cream plate rests clearly on a dark slab with coherent cast shadows; cutlery gives useful scale cues.
-- **Material hierarchy:** cream ceramic, warm toast/yolk, green avocado, tomato red and brass cutlery separate strongly against the charcoal section.
-- **HTML relationship:** menu rows remain the clean right-hand reading column; the 3D scene does not compete with dish descriptions.
+**Review**
+- Breakfast is recognisable immediately without pretending to reproduce exact current plating.
+- Real Manic breakfast-roll photography remains a visible truth/reference card.
+- Elevated three-quarter camera preserves plate depth instead of becoming a flat lay.
+- Cream ceramic, warm toast/yolk, avocado green, tomato red, feta, and brass cutlery separate strongly against the charcoal section.
+- Plate and slab are convincingly grounded by the same upper-left/front-left lighting language as Hero.
+- HTML dish names/descriptions remain stable and easier to read than the 3D layer.
+- Mobile uses a model-first reveal above the menu rows instead of shrinking the desktop split layout.
+- Fallback QA aborts both Hero and Menu GLBs; real photos and semantic menu content remain complete.
 
-### Mobile static review — PASS
+## Motion gate — PASS
 
-- The Blender plate is still identifiable at 390px and is not reduced to visual noise.
-- The real food photograph remains visible at a useful size.
-- The canvas precedes the menu rows, creating a deliberate visual reveal instead of squeezing a desktop split layout onto mobile.
-- The QA screenshot is intentionally model/rows-focused after scrolling into the section; heading readability is covered by the normal responsive HTML layout and no horizontal overflow is introduced.
+**Artifact reviewed**
+- `menu-exploded-mid-1600x1000.png`
 
-### Fallback review — PASS
+**Blender clips confirmed by automated QA**
+- `ACT_MENU_EXPLODE_TOAST`
+- `ACT_MENU_EXPLODE_EGG`
+- `ACT_MENU_EXPLODE_AVOCADO`
+- `ACT_MENU_EXPLODE_TOMATO`
+- `ACT_MENU_EXPLODE_FETA`
+- `ACT_MENU_EXPLODE_GREENS`
+- `ACT_MENU_EXPLODE_FORK`
+- `ACT_MENU_EXPLODE_KNIFE`
 
-The QA suite aborts both Hero and Menu GLB requests. Real photo fallbacks remain visible; business navigation and menu HTML remain functional.
+**Review**
+- Plate and charcoal slab remain fixed while food groups separate in different X/Y/Z directions.
+- Separation reads as a shallow editorial exploded view, not objects flying away.
+- Toast/egg remain related as the central vertical stack; avocado, tomato, feta, and greens create the spiral around them.
+- Cutlery moves only slightly and continues to provide useful scale cues.
+- Camera rises/dollies minimally toward an inspection view while Blender clips provide the actual object choreography.
+- Sticky-stage fix keeps the Blender plate visible through the useful part of the menu scroll instead of allowing the visual to leave too early.
+- Reduced motion continues to show the approved assembled plate.
 
-### Performance review — PASS FOR STATIC SLICE 02
+**Performance note**
+- Both Hero and Menu are still eager-loaded in the current development build. Lazy-loading remains a V3 release requirement, but does not block the visual slice gate.
 
-- `manic-menu.glb` is ~721 KiB uncompressed.
-- One shadow-casting key is used.
-- Menu is static after load/resize in this gate.
-- The Menu GLB is still loaded eagerly in this prototype; lazy loading is a required optimisation before V3 release, but it does not block the visual gate.
+**Verdict: APPROVED / LOCKED.**
 
-### Static verdict
+---
 
-**APPROVED for Menu motion development.**
+# Slice 03 — Café miniature cutaway
 
-### Motion-pass requirements
+## Purpose
 
-- Ingredient separation must be authored in Blender, not as arbitrary browser-only translations.
-- Plate and charcoal slab remain fixed/grounded.
-- Toast, egg, avocado, tomato, feta and greens move in different X/Y/Z directions to form a shallow spiral/exploded composition.
-- Cutlery may separate slightly but should continue acting as scale cues.
-- Camera moves minimally toward a more top-down inspection view as ingredients separate.
-- Maximum separation must preserve food recognition; no ingredient should fly outside the visual field.
-- Reduced motion remains on the approved assembled static frame.
+Create the most Manic-specific 3D section: a stylised miniature/dollhouse interpretation of the café that is always paired with real exterior/interior photography. It must read as an editorial spatial interpretation, not an architectural survey.
 
-### Current verdict
+## Static Blender object target
 
-**Static gate passed — building Blender-authored explosion clips next.**
+- grounded floor/plinth slab
+- back chalkboard-style wall
+- open façade/window/door framing
+- compact counter mass
+- two small café tables
+- simplified chairs
+- menu/chalk panel detail
+- flower/decor accent
+- one or two cup-scale props for human scale
+
+## Static gate requirements
+
+1. Exterior/façade silhouette must read as a small café environment, not disconnected boxes.
+2. Camera must show exterior framing and enough interior depth at the same time.
+3. One real exterior image and one real interior image stay visible in the section.
+4. Grounding/AO/shadows must make the miniature feel like a physical model on a plinth.
+5. Charcoal wall, warm timber, cream trim, and floral accents should connect directly to the existing Manic visual language.
+6. Mobile gets fewer furnishings and a more frontal camera rather than a shrunk desktop dollhouse.
+7. No cutaway/open-wall motion until the static environment passes review.
+
+## Planned motion gate after static approval
+
+- Blender-authored façade group moves/slides open.
+- Camera moves only far enough to reveal counter/chalkboard depth.
+- The end of the sequence visually yields to the real interior photograph.
+- Reduced motion stays on the approved exterior/cutaway static frame.
+
+**Current verdict: BUILDING STATIC MODEL.**
