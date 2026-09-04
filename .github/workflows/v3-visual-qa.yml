@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/v3-blender-slices
+      - feature/v3-slices-05-plus
     paths:
       - 'v3/**'
       - '.github/workflows/v3-visual-qa.yml'
@@ -42,12 +43,14 @@ jobs:
           blender --background --python v3/blender/cafe_motion.py -- --input "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe-base.glb" --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe.glb"
           blender --background --python v3/blender/why.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-why-base.glb"
           blender --background --python v3/blender/why_motion.py -- --input "$GITHUB_WORKSPACE/site/assets/images/models/manic-why-base.glb" --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-why.glb"
+          blender --background --python v3/blender/final.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-final.glb"
           rm -f site/assets/images/models/manic-cafe-base.glb site/assets/images/models/manic-why-base.glb
           test -s site/assets/images/models/manic-hero.glb
           test -s site/assets/images/models/manic-menu.glb
           test -s site/assets/images/models/manic-cafe.glb
           test -s site/assets/images/models/manic-why.glb
-          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb site/assets/images/models/manic-cafe.glb site/assets/images/models/manic-why.glb
+          test -s site/assets/images/models/manic-final.glb
+          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb site/assets/images/models/manic-cafe.glb site/assets/images/models/manic-why.glb site/assets/images/models/manic-final.glb
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -81,5 +84,6 @@ jobs:
             site/assets/images/models/manic-menu.glb
             site/assets/images/models/manic-cafe.glb
             site/assets/images/models/manic-why.glb
+            site/assets/images/models/manic-final.glb
           if-no-files-found: warn
           retention-days: 14
