@@ -115,6 +115,20 @@
   }
 }
 
+@media (min-width: 981px) {
+  .place {
+    min-height: 148svh;
+    align-items: start;
+  }
+
+  .place > div:first-child,
+  .place-photos.cafe-stage {
+    position: sticky;
+    top: 7.5rem;
+    align-self: start;
+  }
+}
+
 @media (max-width: 980px) {
   .place-photos.cafe-stage { min-height: 40rem; }
 }
