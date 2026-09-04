@@ -1,10 +1,9 @@
 @media (prefers-reduced-motion: no-preference) {
   html[data-editorial-scroll="on"] [data-scroll-item] {
-    will-change: transform, opacity;
+    will-change: transform;
     transform: translate3d(var(--scroll-x, 0px), var(--scroll-y, 0px), 0)
       rotate(var(--scroll-rotate, 0deg))
       scale(var(--scroll-scale, 1));
-    opacity: var(--scroll-opacity, 1);
   }
 
   html[data-editorial-scroll="on"] .reveal.is-visible[data-scroll-item] {
@@ -17,6 +16,7 @@
 
   html[data-editorial-scroll="on"] .menu-row[data-scroll-item] {
     transform-origin: 0 50%;
+    opacity: var(--scroll-opacity, 1);
   }
 
   html[data-editorial-scroll="on"] .place-collage figure,
