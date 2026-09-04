@@ -21,7 +21,7 @@ env:
 jobs:
   slice-visual-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,9 +38,11 @@ jobs:
           mkdir -p site/assets/images/models
           blender --background --python v3/blender/hero.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-hero.glb"
           blender --background --python v3/blender/menu.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-menu.glb"
+          blender --background --python v3/blender/cafe.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-cafe.glb"
           test -s site/assets/images/models/manic-hero.glb
           test -s site/assets/images/models/manic-menu.glb
-          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb
+          test -s site/assets/images/models/manic-cafe.glb
+          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb site/assets/images/models/manic-cafe.glb
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -72,5 +74,6 @@ jobs:
             v3/qa-screenshots/
             site/assets/images/models/manic-hero.glb
             site/assets/images/models/manic-menu.glb
+            site/assets/images/models/manic-cafe.glb
           if-no-files-found: warn
           retention-days: 14
