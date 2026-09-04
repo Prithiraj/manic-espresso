@@ -19,9 +19,9 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  hero-static-gate:
+  slice-visual-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,12 +33,14 @@ jobs:
           blender --version | head -n 2
           python3 -c "import numpy; print('numpy', numpy.__version__)"
 
-      - name: Generate Blender hero GLB
+      - name: Generate Blender GLBs
         run: |
           mkdir -p site/assets/images/models
           blender --background --python v3/blender/hero.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-hero.glb"
+          blender --background --python v3/blender/menu.py -- --output "$GITHUB_WORKSPACE/site/assets/images/models/manic-menu.glb"
           test -s site/assets/images/models/manic-hero.glb
-          ls -lh site/assets/images/models/manic-hero.glb
+          test -s site/assets/images/models/manic-menu.glb
+          ls -lh site/assets/images/models/manic-hero.glb site/assets/images/models/manic-menu.glb
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -57,17 +59,18 @@ jobs:
         working-directory: v3
         run: npx playwright install --with-deps chromium
 
-      - name: Render Hero static QA
+      - name: Render slice visual QA
         working-directory: v3
         run: npm run test:visual
 
-      - name: Upload Hero review artifacts
+      - name: Upload V3 review artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: manic-v3-hero-static-qa
+          name: manic-v3-slice-qa
           path: |
             v3/qa-screenshots/
             site/assets/images/models/manic-hero.glb
+            site/assets/images/models/manic-menu.glb
           if-no-files-found: warn
           retention-days: 14
