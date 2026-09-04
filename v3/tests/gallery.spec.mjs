@@ -17,6 +17,18 @@ async function frameGallery(page) {
   await page.waitForTimeout(450);
 }
 
+async function frameGalleryStage(page) {
+  await page.evaluate(() => {
+    const stage = document.querySelector('[data-gallery-stage]');
+    const header = document.querySelector('.site-header');
+    if (!stage) return;
+    const rect = stage.getBoundingClientRect();
+    const top = window.scrollY + rect.top - (header?.offsetHeight || 0) - 18;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+  });
+  await page.waitForTimeout(450);
+}
+
 test('Gallery photo table static desktop 1600x1000', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/', { waitUntil: 'networkidle' });
@@ -32,6 +44,10 @@ test('Gallery photo table static desktop 1600x1000', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
   await page.screenshot({ path: 'qa-screenshots/gallery-static-desktop-1600x1000.png', fullPage: false });
+
+  await frameGalleryStage(page);
+  await expect(gallery.locator('#gallery-canvas')).toBeVisible();
+  await page.screenshot({ path: 'qa-screenshots/gallery-static-desktop-stage-1600x1000.png', fullPage: false });
 });
 
 test('Gallery photo table static mobile 390x844', async ({ page }) => {
@@ -49,13 +65,7 @@ test('Gallery photo table static mobile 390x844', async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(1);
   await page.screenshot({ path: 'qa-screenshots/gallery-static-mobile-390x844.png', fullPage: false });
 
-  await page.evaluate(() => {
-    const stage = document.querySelector('[data-gallery-stage]');
-    const header = document.querySelector('.site-header');
-    const top = stage ? stage.offsetTop + stage.parentElement.offsetTop - (header?.offsetHeight || 0) - 18 : 0;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
-  });
-  await page.waitForTimeout(450);
+  await frameGalleryStage(page);
   await expect(gallery.locator('#gallery-canvas')).toBeVisible();
   await page.screenshot({ path: 'qa-screenshots/gallery-static-mobile-stage-390x844.png', fullPage: false });
 });
