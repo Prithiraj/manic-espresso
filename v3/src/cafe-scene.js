@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const smoothstep = (value) => value * value * (3 - 2 * value);
+
 function frameForWidth(width) {
   if (width < 520) {
     return {
@@ -10,7 +13,9 @@ function frameForWidth(width) {
       modelPosition: new THREE.Vector3(0.30, -0.42, 0.10),
       modelScale: 0.72,
       dpr: 1.2,
-      shadowSize: 1024
+      shadowSize: 1024,
+      cameraIn: new THREE.Vector3(-0.26, 0.20, -0.28),
+      lookShift: new THREE.Vector3(0.16, 0.10, 0.12)
     };
   }
   if (width < 900) {
@@ -21,7 +26,9 @@ function frameForWidth(width) {
       modelPosition: new THREE.Vector3(0.15, -0.34, 0.05),
       modelScale: 0.82,
       dpr: 1.35,
-      shadowSize: 1536
+      shadowSize: 1536,
+      cameraIn: new THREE.Vector3(-0.34, 0.24, -0.36),
+      lookShift: new THREE.Vector3(0.20, 0.12, 0.14)
     };
   }
   return {
@@ -31,7 +38,9 @@ function frameForWidth(width) {
     modelPosition: new THREE.Vector3(0.08, -0.30, 0.0),
     modelScale: 0.91,
     dpr: 1.5,
-    shadowSize: 2048
+    shadowSize: 2048,
+    cameraIn: new THREE.Vector3(-0.46, 0.28, -0.46),
+    lookShift: new THREE.Vector3(0.26, 0.14, 0.18)
   };
 }
 
@@ -40,6 +49,9 @@ export function initCafeScene(canvas, host) {
     document.documentElement.dataset.v3CafeModel = 'fallback';
     return null;
   }
+
+  const section = host.closest('.place') || host;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let renderer;
   try {
@@ -96,25 +108,78 @@ export function initCafeScene(canvas, host) {
   scene.add(new THREE.HemisphereLight(0xfffaf0, 0x4b423c, 1.02));
   scene.add(new THREE.AmbientLight(0xfff5e7, 0.13));
 
+  const keyBase = key.position.clone();
   let model = null;
+  let mixer = null;
+  let clipActions = [];
+  let frame = frameForWidth(host.clientWidth || window.innerWidth);
+  let baseModelPosition = frame.modelPosition.clone();
+  let targetProgress = 0;
+  let progress = 0;
+  let visible = false;
+  let raf = 0;
   let disposed = false;
 
   const render = () => {
     if (!disposed) renderer.render(scene, camera);
   };
 
+  const scrub = (value) => {
+    for (const { action, duration } of clipActions) {
+      action.paused = true;
+      action.time = duration * value;
+    }
+    mixer?.update(0);
+  };
+
+  const applyPhotoState = (value) => {
+    const eased = smoothstep(value);
+    host.style.setProperty('--cafe-exterior-opacity', String(1 - eased * 0.30));
+    host.style.setProperty('--cafe-interior-opacity', String(0.78 + eased * 0.22));
+    host.style.setProperty('--cafe-interior-scale', String(1 + eased * 0.045));
+  };
+
+  const applyMotionFrame = (value) => {
+    const eased = smoothstep(value);
+    const arc = Math.sin(value * Math.PI);
+
+    camera.position.set(
+      frame.camera.x + frame.cameraIn.x * eased + arc * 0.08,
+      frame.camera.y + frame.cameraIn.y * eased,
+      frame.camera.z + frame.cameraIn.z * eased
+    );
+    const look = frame.lookAt.clone().addScaledVector(frame.lookShift, eased);
+    camera.lookAt(look);
+
+    modelRoot.position.set(
+      baseModelPosition.x + eased * 0.03,
+      baseModelPosition.y + eased * 0.02,
+      baseModelPosition.z
+    );
+    modelRoot.rotation.set(0, -0.08 + eased * 0.035, -0.01 + arc * 0.004);
+
+    key.position.set(
+      keyBase.x + eased * 0.45,
+      keyBase.y + eased * 0.20,
+      keyBase.z - eased * 0.35
+    );
+    shadowPlane.material.opacity = 0.13 - eased * 0.018;
+    scrub(eased);
+    applyPhotoState(eased);
+    render();
+  };
+
   const applyFrame = () => {
     const rect = host.getBoundingClientRect();
     const width = Math.max(1, Math.round(rect.width));
     const height = Math.max(1, Math.round(rect.height));
-    const frame = frameForWidth(width);
+    frame = frameForWidth(width);
+    baseModelPosition = frame.modelPosition.clone();
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, frame.dpr));
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.fov = frame.fov;
-    camera.position.copy(frame.camera);
-    camera.lookAt(frame.lookAt);
     camera.updateProjectionMatrix();
 
     if (key.shadow.mapSize.x !== frame.shadowSize) {
@@ -125,10 +190,47 @@ export function initCafeScene(canvas, host) {
       }
     }
 
-    modelRoot.position.copy(frame.modelPosition);
     modelRoot.scale.setScalar(frame.modelScale);
-    modelRoot.rotation.set(0, -0.08, -0.01);
-    render();
+
+    if (reducedMotion) {
+      targetProgress = 0;
+      progress = 0;
+      camera.position.copy(frame.camera);
+      camera.lookAt(frame.lookAt);
+      modelRoot.position.copy(baseModelPosition);
+      modelRoot.rotation.set(0, -0.08, -0.01);
+      key.position.copy(keyBase);
+      shadowPlane.material.opacity = 0.13;
+      scrub(0);
+      applyPhotoState(0);
+      render();
+    } else {
+      applyMotionFrame(progress);
+    }
+  };
+
+  const updateScroll = () => {
+    if (reducedMotion) return;
+    const rect = section.getBoundingClientRect();
+    const travel = Math.max(section.offsetHeight * 0.72, window.innerHeight * 0.82);
+    targetProgress = clamp(-rect.top / travel, 0, 1);
+    start();
+  };
+
+  const tick = () => {
+    if (disposed || reducedMotion || !visible || document.hidden) {
+      raf = 0;
+      return;
+    }
+    progress += (targetProgress - progress) * 0.08;
+    if (Math.abs(targetProgress - progress) < 0.0005) progress = targetProgress;
+    applyMotionFrame(progress);
+    if (Math.abs(targetProgress - progress) > 0.0001) raf = requestAnimationFrame(tick);
+    else raf = 0;
+  };
+
+  const start = () => {
+    if (!reducedMotion && visible && !raf && !document.hidden) raf = requestAnimationFrame(tick);
   };
 
   const loader = new GLTFLoader();
@@ -144,9 +246,26 @@ export function initCafeScene(canvas, host) {
         object.receiveShadow = true;
       });
       modelRoot.add(model);
+
+      if (gltf.animations?.length) {
+        mixer = new THREE.AnimationMixer(model);
+        clipActions = gltf.animations
+          .filter((clip) => clip.name.startsWith('ACT_CAFE_'))
+          .map((clip) => {
+            const action = mixer.clipAction(clip);
+            action.play();
+            action.paused = true;
+            action.time = 0;
+            return { action, duration: clip.duration };
+          });
+        scrub(0);
+      }
+
       host.classList.add('cafe-model-ready');
       document.documentElement.dataset.v3CafeModel = 'ready';
+      document.documentElement.dataset.v3CafeClips = gltf.animations.map((clip) => clip.name).join(',');
       applyFrame();
+      updateScroll();
     },
     undefined,
     (error) => {
@@ -157,13 +276,32 @@ export function initCafeScene(canvas, host) {
     }
   );
 
+  const observer = new IntersectionObserver((entries) => {
+    visible = Boolean(entries[0]?.isIntersecting);
+    if (visible) {
+      updateScroll();
+      start();
+    } else if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  }, { threshold: 0.02 });
+  observer.observe(section);
+
   const resizeObserver = new ResizeObserver(applyFrame);
   resizeObserver.observe(host);
+  window.addEventListener('scroll', updateScroll, { passive: true });
+  document.addEventListener('visibilitychange', start);
   applyFrame();
 
   return () => {
     disposed = true;
+    if (raf) cancelAnimationFrame(raf);
+    observer.disconnect();
     resizeObserver.disconnect();
+    window.removeEventListener('scroll', updateScroll);
+    document.removeEventListener('visibilitychange', start);
+    mixer?.stopAllAction();
     model?.traverse((object) => {
       if (!object.isMesh) return;
       object.geometry?.dispose?.();
