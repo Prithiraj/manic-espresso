@@ -1,5 +1,4 @@
 import bpy
-import math
 import os
 import sys
 
@@ -48,10 +47,9 @@ def add_pin(root, brass, dark):
     inner = flattened_sphere('VISIT_PIN_INSET', (0.48, -0.195, 0.72), (0.19, 0.035, 0.19), dark, segments=40, rings=20)
     ensure_parent(inner, root)
 
-    bpy.ops.mesh.primitive_cone_add(vertices=56, radius1=0.27, radius2=0.40, depth=0.62, location=(0.48, 0.04, 0.20))
+    bpy.ops.mesh.primitive_cone_add(vertices=56, radius1=0.06, radius2=0.30, depth=0.62, location=(0.48, 0.04, 0.20))
     tail = bpy.context.active_object
     tail.name = 'VISIT_PIN_TAIL'
-    tail.rotation_euler[0] = 0.0
     add_material(tail, brass)
     smooth(tail)
     ensure_parent(tail, root)
@@ -74,27 +72,31 @@ def add_street_lines(card_root, line_mat):
 
 
 def add_facade_marker(parent, cream, charcoal, brass):
-    marker = empty('VISIT_FACADE_MARKER', (-1.22, 0.58, 0.12))
+    marker_loc = (-1.22, 0.58, 0.12)
+    marker = empty('VISIT_FACADE_MARKER', marker_loc)
     ensure_parent(marker, parent)
 
-    base = bevel_cube('VISIT_MARKER_BASE', (1.02, 0.32, 0.12), (0.0, 0.0, 0.0), cream, bevel=0.045, segments=4)
-    ensure_parent(base, marker)
-    wall = bevel_cube('VISIT_MARKER_WALL', (0.90, 0.12, 0.58), (0.0, 0.03, 0.30), charcoal, bevel=0.025, segments=3)
-    ensure_parent(wall, marker)
-    frame_left = bevel_cube('VISIT_MARKER_FRAME_L', (0.07, 0.04, 0.42), (-0.30, -0.045, 0.27), brass, bevel=0.018, segments=3)
-    frame_right = bevel_cube('VISIT_MARKER_FRAME_R', (0.07, 0.04, 0.42), (0.30, -0.045, 0.27), brass, bevel=0.018, segments=3)
-    lintel = bevel_cube('VISIT_MARKER_FRAME_TOP', (0.67, 0.04, 0.07), (0.0, -0.045, 0.45), brass, bevel=0.018, segments=3)
-    for obj in (frame_left, frame_right, lintel):
+    def world(local):
+        return tuple(marker_loc[i] + local[i] for i in range(3))
+
+    base = bevel_cube('VISIT_MARKER_BASE', (1.02, 0.32, 0.12), world((0.0, 0.0, 0.0)), cream, bevel=0.045, segments=4)
+    wall = bevel_cube('VISIT_MARKER_WALL', (0.90, 0.12, 0.58), world((0.0, 0.03, 0.30)), charcoal, bevel=0.025, segments=3)
+    frame_left = bevel_cube('VISIT_MARKER_FRAME_L', (0.07, 0.04, 0.42), world((-0.30, -0.045, 0.27)), brass, bevel=0.018, segments=3)
+    frame_right = bevel_cube('VISIT_MARKER_FRAME_R', (0.07, 0.04, 0.42), world((0.30, -0.045, 0.27)), brass, bevel=0.018, segments=3)
+    lintel = bevel_cube('VISIT_MARKER_FRAME_TOP', (0.67, 0.04, 0.07), world((0.0, -0.045, 0.45)), brass, bevel=0.018, segments=3)
+    for obj in (base, wall, frame_left, frame_right, lintel):
         ensure_parent(obj, marker)
 
 
 def add_paper_stack(paper, accent):
-    stack_root = empty('VISIT_PAPER_STACK', (1.35, -0.72, 0.10))
+    stack_loc = (1.35, -0.72, 0.10)
+    stack_root = empty('VISIT_PAPER_STACK', stack_loc)
     for index, offset in enumerate([(0, 0, 0), (-0.06, 0.07, 0.045), (0.05, 0.13, 0.09)]):
+        location = tuple(stack_loc[i] + offset[i] for i in range(3))
         sheet = bevel_cube(
             f'VISIT_PAPER_{index+1}',
             (1.38, 0.86, 0.035),
-            (offset[0], offset[1], offset[2]),
+            location,
             paper if index < 2 else accent,
             bevel=0.045,
             segments=4,
