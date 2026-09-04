@@ -1,0 +1,72 @@
+@media (prefers-reduced-motion: no-preference) {
+  html[data-editorial-scroll="on"] [data-scroll-item] {
+    will-change: transform, opacity;
+    transform: translate3d(var(--scroll-x, 0px), var(--scroll-y, 0px), 0)
+      rotate(var(--scroll-rotate, 0deg))
+      scale(var(--scroll-scale, 1));
+    opacity: var(--scroll-opacity, 1);
+  }
+
+  html[data-editorial-scroll="on"] .reveal.is-visible[data-scroll-item] {
+    transition: opacity .55s ease, transform .18s linear;
+  }
+
+  html[data-editorial-scroll="on"] .statement-card[data-scroll-item] {
+    transform-origin: 50% 100%;
+  }
+
+  html[data-editorial-scroll="on"] .menu-row[data-scroll-item] {
+    transform-origin: 0 50%;
+  }
+
+  html[data-editorial-scroll="on"] .place-collage figure,
+  html[data-editorial-scroll="on"] .gallery-grid figure {
+    overflow: hidden;
+  }
+
+  html[data-editorial-scroll="on"] .place-collage figure img,
+  html[data-editorial-scroll="on"] .gallery-grid figure img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate3d(0, var(--media-shift, 0px), 0) scale(1.065);
+    transition: transform .12s linear;
+    will-change: transform;
+  }
+
+  html[data-editorial-scroll="on"] .review-band h2,
+  html[data-editorial-scroll="on"] .final-cta h2 {
+    transform: translate3d(0, var(--headline-shift, 0px), 0) scale(var(--headline-scale, 1));
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+
+  html[data-editorial-scroll="on"] .review-band > p:not(.eyebrow),
+  html[data-editorial-scroll="on"] .review-band > a,
+  html[data-editorial-scroll="on"] .final-cta > div {
+    transform: translate3d(0, var(--support-shift, 0px), 0);
+    opacity: var(--support-opacity, 1);
+    will-change: transform, opacity;
+  }
+
+  html[data-editorial-scroll="on"] .proof-bar > * {
+    transform: translate3d(0, var(--proof-shift, 0px), 0);
+    opacity: var(--proof-opacity, 1);
+    will-change: transform, opacity;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-item],
+  .place-collage figure img,
+  .gallery-grid figure img,
+  .review-band h2,
+  .final-cta h2,
+  .review-band > p:not(.eyebrow),
+  .review-band > a,
+  .final-cta > div,
+  .proof-bar > * {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
