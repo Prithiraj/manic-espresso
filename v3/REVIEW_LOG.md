@@ -1,6 +1,6 @@
 # V3 Slice Review Log
 
-V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enough: each slice must pass static composition, desktop/mobile framing, motion, fallback, and performance checks before the next high-priority slice is approved.
+V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enough: each slice must pass static composition, desktop/mobile framing, motion, fallback, and performance checks before approval.
 
 ## Status
 
@@ -8,7 +8,7 @@ V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enou
 |---|---|---|---|---|---|---|
 | Hero ceramic | Pass | Pass | Pass | Pass | Pass | **Approved** |
 | Menu exploded breakfast | Pass | Pass | Pass | Pass | Pass | **Approved** |
-| Café miniature cutaway | In progress | Pending | Pending | Pending | Pending | **Building** |
+| Café miniature cutaway | Pass | Pass | Pass | Pending | Pass | **Static gate passed** |
 | Why Manic still lifes | Not started | — | — | — | — | Planned |
 | Final ceramic callback | Not started | — | — | — | — | Planned |
 | Visit location token | Not started | — | — | — | — | Planned |
@@ -18,80 +18,37 @@ V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enou
 
 ---
 
-# Slice 01 — Hero ceramic
+# Slice 01 — Hero ceramic — APPROVED
 
-## Static gate — PASS
+**Reviewed:** `hero-desktop-1600x1000.png`, `hero-mobile-390x844.png`, `hero-scroll-mid-1600x1000.png`.
 
-**Artifacts reviewed**
-- `hero-desktop-1600x1000.png`
-- `hero-mobile-390x844.png`
-- generated `manic-hero.glb` (~629 KiB before final compression)
+- Custom Blender cup/saucer/spoon/napkin/floral still life reads as crafted geometry, not primitives.
+- Real Manic interior/coffee/pancake photography remains important.
+- Warm upper-left/front-left key, restrained perspective and contact shadows make the set physically grounded.
+- Blender clips `ACT_HERO_CUP_LIFT` and `ACT_HERO_SPOON_SHIFT` are scrubbed by Three.js on scroll.
+- Reduced motion holds clip time zero at the approved static frame.
+- Hero GLB remains roughly 0.63 MB before final compression.
 
-**Review**
-- Headline and conversion actions remain the dominant mass.
-- Real Manic interior, coffee, and pancake photography stays visually important.
-- Custom lathed cup, hollow interior, curved handle, saucer, spoon, napkin, floral detail, and grounding plinth read as a crafted still life rather than default primitives.
-- Restrained perspective reveals both coffee surface and cup side.
-- One warm upper-left/front-left key gives coherent cast/contact shadows and stable grounding.
-- Mobile remains text-led while revealing the Blender composition in the lower part of the first scroll.
-- Explicit GLB-abort QA proves the real-photo fallback and CTAs remain functional.
-
-## Motion gate — PASS
-
-**Artifact reviewed**
-- `hero-scroll-mid-1600x1000.png`
-
-**Blender clips confirmed**
-- `ACT_HERO_CUP_LIFT`
-- `ACT_HERO_SPOON_SHIFT`
-
-**Review**
-- Three.js scrubs Blender-authored object animation; it does not rotate the full world as a shortcut.
-- Camera uses a shallow dolly/arc and very small look-target change.
-- Saucer/plinth remain the stable grounded mass while the cup lift stays intentionally small.
-- Key light moves within the same morning-light direction and shadow softness remains coherent.
-- Reduced motion locks the exact approved static frame at Blender clip time zero.
-
-**Verdict: APPROVED / LOCKED.**
+**Verdict: LOCKED.**
 
 ---
 
-# Slice 02 — Menu exploded breakfast
+# Slice 02 — Menu exploded breakfast — APPROVED
 
-## Static gate — PASS
+**Reviewed:** `menu-static-desktop-1600x1000.png`, `menu-static-mobile-390x844.png`, `menu-exploded-mid-1600x1000.png`.
 
-**Artifacts reviewed**
-- `menu-static-desktop-1600x1000.png`
-- `menu-static-mobile-390x844.png`
-- generated `manic-menu.glb` (~721 KiB before animation; ~754 KiB with animation)
+### Static composition
 
-**Blender composition**
-- custom ceramic plate/rim
-- layered toast/crust
-- irregular egg-white lobes + yolk
-- avocado fan
-- tomato discs
-- feta forms
-- greens/stem
-- fork + knife
-- charcoal presentation slab
+- Custom ceramic plate/rim, layered toast, irregular egg white/yolk, avocado fan, tomato discs, feta, greens, fork and knife are immediately recognisable as an editorial breakfast sculpture.
+- The composition is explicitly not presented as Manic Espresso's exact current plating.
+- Real Manic breakfast-roll photography remains visible as the truth/reference layer.
+- Plate/slab remain grounded under the same morning-light direction as Hero.
+- HTML menu rows stay the primary reading layer.
 
-**Review**
-- Breakfast is recognisable immediately without pretending to reproduce exact current plating.
-- Real Manic breakfast-roll photography remains a visible truth/reference card.
-- Elevated three-quarter camera preserves plate depth instead of becoming a flat lay.
-- Cream ceramic, warm toast/yolk, avocado green, tomato red, feta, and brass cutlery separate strongly against the charcoal section.
-- Plate and slab are convincingly grounded by the same upper-left/front-left lighting language as Hero.
-- HTML dish names/descriptions remain stable and easier to read than the 3D layer.
-- Mobile uses a model-first reveal above the menu rows instead of shrinking the desktop split layout.
-- Fallback QA aborts both Hero and Menu GLBs; real photos and semantic menu content remain complete.
+### Motion
 
-## Motion gate — PASS
+Blender-authored clips confirmed:
 
-**Artifact reviewed**
-- `menu-exploded-mid-1600x1000.png`
-
-**Blender clips confirmed by automated QA**
 - `ACT_MENU_EXPLODE_TOAST`
 - `ACT_MENU_EXPLODE_EGG`
 - `ACT_MENU_EXPLODE_AVOCADO`
@@ -101,55 +58,72 @@ V3 is reviewed one Blender/Three.js slice at a time. A passing build is not enou
 - `ACT_MENU_EXPLODE_FORK`
 - `ACT_MENU_EXPLODE_KNIFE`
 
-**Review**
-- Plate and charcoal slab remain fixed while food groups separate in different X/Y/Z directions.
-- Separation reads as a shallow editorial exploded view, not objects flying away.
-- Toast/egg remain related as the central vertical stack; avocado, tomato, feta, and greens create the spiral around them.
-- Cutlery moves only slightly and continues to provide useful scale cues.
-- Camera rises/dollies minimally toward an inspection view while Blender clips provide the actual object choreography.
-- Sticky-stage fix keeps the Blender plate visible through the useful part of the menu scroll instead of allowing the visual to leave too early.
-- Reduced motion continues to show the approved assembled plate.
+Plate/slab stay fixed while ingredient groups separate in a shallow X/Y/Z spiral. Camera rises/dollies slightly; cutlery remains a scale cue. The sticky-stage correction keeps the plate visible through the useful scroll window. Reduced motion stays assembled.
 
-**Performance note**
-- Both Hero and Menu are still eager-loaded in the current development build. Lazy-loading remains a V3 release requirement, but does not block the visual slice gate.
-
-**Verdict: APPROVED / LOCKED.**
+**Verdict: LOCKED.**
 
 ---
 
 # Slice 03 — Café miniature cutaway
 
-## Purpose
+## Static Blender model
 
-Create the most Manic-specific 3D section: a stylised miniature/dollhouse interpretation of the café that is always paired with real exterior/interior photography. It must read as an editorial spatial interpretation, not an architectural survey.
+The current miniature includes:
 
-## Static Blender object target
+- cream physical-model base and warm floor insert
+- dark back and side walls
+- chalkboard-style focal panel with abstract chalk strokes
+- timber counter and light worktop
+- simplified espresso-machine silhouette
+- two café tables
+- four simplified chairs
+- two cup/coffee scale props
+- counter vase, stems and floral accents
+- cream/brass façade/window/door framing
+- dark sign block with abstract line detail
 
-- grounded floor/plinth slab
-- back chalkboard-style wall
-- open façade/window/door framing
-- compact counter mass
-- two small café tables
-- simplified chairs
-- menu/chalk panel detail
-- flower/decor accent
-- one or two cup-scale props for human scale
+This is deliberately a stylised/dollhouse interpretation based on visible Manic cues, not a claimed architectural survey.
 
-## Static gate requirements
+## Static artifacts reviewed
 
-1. Exterior/façade silhouette must read as a small café environment, not disconnected boxes.
-2. Camera must show exterior framing and enough interior depth at the same time.
-3. One real exterior image and one real interior image stay visible in the section.
-4. Grounding/AO/shadows must make the miniature feel like a physical model on a plinth.
-5. Charcoal wall, warm timber, cream trim, and floral accents should connect directly to the existing Manic visual language.
-6. Mobile gets fewer furnishings and a more frontal camera rather than a shrunk desktop dollhouse.
-7. No cutaway/open-wall motion until the static environment passes review.
+- `cafe-static-desktop-1600x1000.png`
+- `cafe-static-mobile-390x844.png`
+- generated `manic-cafe.glb` (~819 KiB before animation/compression)
 
-## Planned motion gate after static approval
+## Desktop static review — PASS
 
-- Blender-authored façade group moves/slides open.
-- Camera moves only far enough to reveal counter/chalkboard depth.
-- The end of the sequence visually yields to the real interior photograph.
-- Reduced motion stays on the approved exterior/cutaway static frame.
+- **Silhouette:** façade frame immediately makes the model read as a small café environment rather than a collection of boxes.
+- **Depth:** back wall, counter, foreground tables and open roof create clear foreground/midground/background separation.
+- **Perspective:** three-quarter dollhouse camera reveals exterior framing and interior simultaneously.
+- **Lighting:** the established upper-left/front-left morning key creates legible table/chair/counter shadows without blacking out the charcoal walls.
+- **Materials:** cream trim, charcoal wall, timber floor/counter, brass accents, ceramic cups and rose flowers are visibly distinct.
+- **Real-photo relationship:** exterior/sign photography and interior photography flank the miniature and clearly distinguish real evidence from 3D interpretation.
 
-**Current verdict: BUILDING STATIC MODEL.**
+## Mobile static review — PASS
+
+- More frontal/tighter framing keeps the miniature readable at 390px.
+- Tables, counter and façade remain distinguishable rather than collapsing into noise.
+- Real exterior/interior images remain present as spatial anchors.
+- The section remains complete without WebGL; the existing two real photos are the fallback and automated QA verifies them.
+
+## Performance review — PASS FOR STATIC SLICE 03
+
+- Café GLB is ~819 KiB before final compression.
+- One shadow-casting key light is used.
+- Static render does not run an idle RAF loop.
+- Hero/Menu/Café are still eager-loaded during development; section-level lazy loading is a release optimisation after visual slices are locked.
+
+## Static verdict
+
+**APPROVED for the Café cutaway motion pass.**
+
+## Motion requirements
+
+1. Façade movement must be Blender-authored via the `RIG_CAFE_FACADE` group.
+2. Façade should slide/open sideways and slightly forward rather than disappearing or dissolving.
+3. Camera should move only enough to peer deeper toward counter/chalkboard detail.
+4. The physical base/floor/back wall remain stable to preserve grounding.
+5. Real interior photography should gain visual priority toward the end of the motion sequence.
+6. Reduced motion stays on the approved static dollhouse frame.
+
+**Current verdict: STATIC GATE PASSED — BUILDING CUTAWAY MOTION.**
