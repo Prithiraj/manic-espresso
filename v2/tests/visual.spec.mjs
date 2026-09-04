@@ -80,3 +80,43 @@ test('desktop WebGL scene changes on scroll when motion is allowed', async ({ pa
     fullPage: false
   });
 });
+
+test('editorial elements respond to page scroll when motion is allowed', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await waitForRender(page);
+
+  await expect(page.locator('html')).toHaveAttribute('data-editorial-scroll', 'on');
+
+  const card = page.locator('.statement-card').first();
+  const galleryImage = page.locator('.gallery-grid figure img').first();
+  const beforeCardY = await card.evaluate((element) => element.style.getPropertyValue('--scroll-y'));
+  const beforeMediaY = await galleryImage.evaluate((element) => element.style.getPropertyValue('--media-shift'));
+
+  await page.evaluate(() => {
+    const menu = document.querySelector('.menu-section');
+    window.scrollTo({ top: Math.max(0, menu.offsetTop - 180), behavior: 'instant' });
+  });
+  await page.waitForTimeout(500);
+
+  const afterCardY = await card.evaluate((element) => element.style.getPropertyValue('--scroll-y'));
+  expect(afterCardY).not.toBe(beforeCardY);
+
+  await page.evaluate(() => {
+    const gallery = document.querySelector('.gallery-section');
+    window.scrollTo({ top: Math.max(0, gallery.offsetTop - 260), behavior: 'instant' });
+  });
+  await page.waitForTimeout(500);
+
+  const afterMediaY = await galleryImage.evaluate((element) => element.style.getPropertyValue('--media-shift'));
+  expect(afterMediaY).not.toBe(beforeMediaY);
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+
+  await page.screenshot({
+    path: 'qa-screenshots/editorial-scroll-1600x1000.png',
+    fullPage: false
+  });
+});
