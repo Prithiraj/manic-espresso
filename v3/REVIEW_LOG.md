@@ -21,7 +21,7 @@ Each slice is reviewed against:
 
 | Slice | Static build | Desktop review | Mobile review | Motion review | Performance | Status |
 |---|---|---|---|---|---|---|
-| Hero ceramic | In progress | Pending | Pending | Pending | Pending | **Building** |
+| Hero ceramic | Pass | Pass | Pass | Pending | Pass | **Static gate passed** |
 | Proof tokens | Not started | — | — | — | — | Deferred |
 | Why Manic still lifes | Not started | — | — | — | — | Planned |
 | Menu exploded breakfast | Not started | — | — | — | — | Planned |
@@ -58,14 +58,50 @@ Each slice is reviewed against:
 
 One warm key from upper-left/front-left, weak cool-neutral fill, soft environmental contribution. Only the key casts shadows.
 
-### First QA questions
+### QA run
 
-1. Does the ceramic silhouette look intentional at 1600×1000 with motion disabled?
-2. Is there a readable contact shadow between cup/saucer and saucer/plinth?
-3. Is the 3D set clearly secondary to the real café story rather than replacing it?
-4. Does mobile keep the cup plus one strong real image without overcrowding?
-5. Does WebGL failure still leave a complete hero?
+Static QA completed successfully after fixing the Ubuntu Blender package's missing `numpy` dependency. CI now installs Blender 4.0.2 plus `python3-numpy`, generates the GLB headlessly, builds the Vite production bundle, and renders deterministic reduced-motion screenshots.
 
-### Current verdict
+Artifacts reviewed:
 
-**Building — not yet reviewed.**
+- `hero-desktop-1600x1000.png`
+- `hero-mobile-390x844.png`
+- generated `manic-hero.glb` (~636 KB before further compression work)
+
+### Desktop review — PASS
+
+- **Composition:** The headline remains the dominant mass; the Blender set sits in the right-hand photo field instead of becoming a centred 3D product demo.
+- **Perspective:** Cup top and side are both readable. Perspective is restrained and does not feel game-like.
+- **Grounding:** Cup/saucer/plinth relationship reads clearly. Broad plinth and directional shadow establish physical weight.
+- **Materials:** Ceramic, coffee, brass spoon, and paper napkin separate adequately under the warm key.
+- **Photography relationship:** Interior, coffee, and pancake images remain important and visibly real; Blender behaves as a foreground layer around them.
+- **Geometry:** The custom cup silhouette and curved handle no longer read as an obvious default primitive.
+
+### Mobile review — PASS WITH WATCH ITEM
+
+- Headline/actions remain readable and conversion-first.
+- One strong real interior image plus the coffee image are preserved; the pancake card is correctly removed.
+- The Blender model begins lower in the first scroll, so the first viewport remains text-led. This is acceptable for the static gate and creates a natural reveal, but the motion pass should bring the ceramic set upward slightly as the user reaches the lower half of the hero rather than leaving the effect too late.
+
+### Fallback review — PASS
+
+Playwright explicitly aborts `models/manic-hero.glb`; the real coffee fallback remains visible and the directions CTA remains functional. No essential content depends on WebGL.
+
+### Performance review — PASS FOR SLICE 01
+
+- Generated GLB is small enough for the first slice (~636 KB) before compression.
+- Rendering is static/off-cycle after resize during this gate.
+- DPR is capped by breakpoint.
+- Only one shadow-casting key light is used.
+
+### Static verdict
+
+**Approved for the Hero motion pass.**
+
+### Motion-pass requirements
+
+- Scrub the Blender-authored `ACT_HERO_CUP_LIFT` / spoon action rather than inventing a full-world rotation.
+- Move camera through a shallow dolly/arc only.
+- Keep saucer/plinth visually grounded as the cup lifts.
+- On mobile, bias motion upward enough that the 3D still life becomes visible before the hero fully exits.
+- Reduced motion must remain exactly on the approved static frame.
