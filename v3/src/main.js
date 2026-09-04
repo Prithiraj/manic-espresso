@@ -1,7 +1,9 @@
 import './styles.css';
+import './why-slice.css';
 import './menu-slice.css';
 import './cafe-slice.css';
 import { initHeroScene } from './hero-scene.js';
+import { initWhyScene } from './why-scene.js';
 import { initMenuScene } from './menu-scene.js';
 import { initCafeScene } from './cafe-scene.js';
 
@@ -21,6 +23,42 @@ function initHero() {
   const dispose = initHeroScene(canvas, host);
   if (!dispose && !document.documentElement.dataset.v3Model) {
     document.documentElement.dataset.v3Model = 'fallback';
+  }
+}
+
+function initWhy() {
+  const grid = document.querySelector('.why-grid');
+  if (!grid || !grid.parentElement) {
+    document.documentElement.dataset.v3WhyModel = 'fallback';
+    return;
+  }
+
+  const stage = document.createElement('div');
+  stage.className = 'why-stage';
+  stage.dataset.whyStage = '';
+  grid.parentElement.insertBefore(stage, grid);
+  stage.append(grid);
+
+  const keys = ['plate', 'welcome', 'find'];
+  [...grid.querySelectorAll('article')].forEach((card, index) => {
+    card.dataset.whyCard = keys[index] || `card-${index}`;
+  });
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'why-canvas';
+  canvas.className = 'why-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  stage.prepend(canvas);
+
+  const fallback = document.createElement('p');
+  fallback.className = 'why-fallback-note';
+  fallback.textContent = '3D still lifes unavailable — the evidence-backed Why Manic copy remains fully usable.';
+  stage.append(fallback);
+
+  const dispose = initWhyScene(canvas, stage);
+  if (!dispose && !document.documentElement.dataset.v3WhyModel) {
+    stage.classList.add('why-model-failed');
+    document.documentElement.dataset.v3WhyModel = 'fallback';
   }
 }
 
@@ -88,6 +126,7 @@ async function markReady() {
 
 initHeader();
 initHero();
+initWhy();
 initMenu();
 initCafe();
 markReady();
