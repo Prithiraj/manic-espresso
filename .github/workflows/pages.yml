@@ -28,13 +28,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: v2/package-lock.json
 
       - name: Build Three.js V2
         working-directory: v2
         run: |
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
 
       - name: Assemble Pages artifact
