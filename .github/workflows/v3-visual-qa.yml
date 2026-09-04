@@ -91,6 +91,7 @@ jobs:
           name: manic-v3-slice-qa
           path: |
             v3/qa-screenshots/
+            v3/test-results/
             site/assets/images/models/manic-hero.glb
             site/assets/images/models/manic-menu.glb
             site/assets/images/models/manic-cafe.glb
