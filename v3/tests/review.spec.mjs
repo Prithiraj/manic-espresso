@@ -17,6 +17,16 @@ async function frameReview(page) {
   await page.waitForTimeout(500);
 }
 
+async function frameReviewEntering(page) {
+  await page.evaluate(() => {
+    const section = document.getElementById('reviews');
+    if (!section) return;
+    const top = section.offsetTop - window.innerHeight * 0.78;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+  });
+  await page.waitForTimeout(700);
+}
+
 test('Review paper static desktop 1600x1000', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/', { waitUntil: 'networkidle' });
@@ -54,14 +64,16 @@ test('Review paper turns into its settled state on scroll', async ({ page }) => 
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/', { waitUntil: 'networkidle' });
   await waitForReview(page);
-  await frameReview(page);
+  await frameReviewEntering(page);
 
   const stage = page.locator('[data-review-stage]');
   const before = Number(await stage.getAttribute('data-review-progress') || 0);
+  expect(before).toBeLessThan(0.55);
+
   await page.evaluate(() => window.scrollBy({ top: 430, behavior: 'instant' }));
   await page.waitForTimeout(950);
   const after = Number(await stage.getAttribute('data-review-progress') || 0);
-  expect(after).toBeGreaterThan(before + 0.05);
+  expect(after).toBeGreaterThan(before + 0.20);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
